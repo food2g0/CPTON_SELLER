@@ -525,8 +525,8 @@ class _HomeScreenState extends State<HomeScreen> {
       maxY: 6,
       lineBarsData: [
         LineChartBarData(
-          spots: const [
-            FlSpot(2, 2),
+          spots:  [
+            FlSpot(2.9, 2),
             FlSpot(0, 0),
             FlSpot(0, 0),
             FlSpot(0, 0),

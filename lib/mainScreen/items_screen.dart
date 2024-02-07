@@ -1,10 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
 import '../Widgets/customers_drawer.dart';
 import '../Widgets/items_design.dart';
 import '../Widgets/progress_bar.dart';
+import '../colors.dart';
 import '../global/global.dart';
 import '../models/items.dart';
 import '../models/menus.dart';
@@ -27,8 +29,9 @@ class _ItemsScreenState extends State<ItemsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors().white1,
       appBar: AppBar(
-      backgroundColor: Colors.red[900],
+      backgroundColor: AppColors().red,
       automaticallyImplyLeading: true,
       actions: [
         IconButton(
@@ -45,14 +48,7 @@ class _ItemsScreenState extends State<ItemsScreen> {
         ),
       ],
 
-      title: Text(
-        sharedPreferences!.getString("sellersName")!,
-        style: TextStyle(
-          color: Colors.amber,
-          fontFamily: "Montserrat",
-          fontWeight: FontWeight.bold,
-        ),
-      ),
+
       centerTitle: true,
       bottom: PreferredSize(
         preferredSize: Size.fromHeight(40.0), // Adjust the height as needed
@@ -65,8 +61,8 @@ class _ItemsScreenState extends State<ItemsScreen> {
             "My "+  widget.model!.menuTitle!.toString() + "'s Products",
               style: TextStyle(
                 color: Colors.white,
-                fontSize: 18,
-                fontFamily: "Montserrat",
+                fontSize: 12.sp,
+                fontFamily: "Poppins",
 
               ),
             ),

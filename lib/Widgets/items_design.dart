@@ -2,6 +2,7 @@ import 'package:cpton_food2go_sellers/Widgets/Dimensions.dart';
 import 'package:cpton_food2go_sellers/colors.dart';
 import 'package:cpton_food2go_sellers/mainScreen/edit_item_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../models/items.dart';
 
 class ItemsDesignWidget extends StatefulWidget {
@@ -18,29 +19,33 @@ class ItemsDesignWidget extends StatefulWidget {
 class _ItemsDesignWidgetState extends State<ItemsDesignWidget> {
   @override
   Widget build(BuildContext context) {
+
     return InkWell(
       onTap: () {
         //Navigator.push(context, MaterialPageRoute(builder: (c)=> ItemsScreen(model: widget.model)));
       },
-      splashColor: Colors.black45,
       child: Padding(
         padding: const EdgeInsets.all(10.0),
-        child: Container(
-          color: Colors.black87,
-          height: 250,
-          width: 150,
+        child: Card(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                width: 100,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                ),
                 height: 100,
-                child: Image.network(
-                  widget.model!.thumbnailUrl!,
-                  fit: BoxFit.contain,
+                width: 170,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12.w),
+                  child: Image.network(
+                    widget.model!.thumbnailUrl!,
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
+
               SizedBox(height: 10),
               // Add some space between the image and text/icon
               Row(
@@ -49,14 +54,14 @@ class _ItemsDesignWidgetState extends State<ItemsDesignWidget> {
                   Icon(
                     Icons.fastfood_outlined,
                     color: Colors.amber,
-                    size: 20,
+                    size: 12.sp,
                   ),
                   SizedBox(width: 4),
                   Text(
                     widget.model!.productTitle!,
                     style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
+                      color: AppColors().black,
+                      fontSize: 12.sp,
                       fontFamily: "Poppins",
                       fontWeight: FontWeight.w500,
                     ),
@@ -70,15 +75,15 @@ class _ItemsDesignWidgetState extends State<ItemsDesignWidget> {
                 children: [
                   Icon(
                     Icons.price_check,
-                    color: Colors.red,
-                    size: Dimensions.font16,
+                    color: AppColors().green,
+                    size: 16.sp,
                   ),
                   SizedBox(width: 4),
                   Text(
                     'Php. ' + widget.model!.productPrice.toString() + '.00',
                     style: TextStyle(
-                      color: Colors.white,
-                      fontSize: Dimensions.font12,
+                      color: AppColors().black1,
+                      fontSize: 12.sp,
                       fontFamily: "Poppins",
                       fontWeight: FontWeight.w400,
                     ),
@@ -91,21 +96,30 @@ class _ItemsDesignWidgetState extends State<ItemsDesignWidget> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  ElevatedButton(
+                  IconButton(
                     onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (c)=> EditItemScreen(item: widget.model!)));
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => EditItemScreen(item: widget.model!),
+                        ),
+                      );
                     },
-                    child:Icon(Icons.edit),
+                    icon: Icon(Icons.edit),
+                    color: AppColors().green, // Set the color of the icon as needed
+                    iconSize: 24.sp, // Set the size of the icon as needed
                   ),
+
                   SizedBox(width: 8),
-                  ElevatedButton(
+                  IconButton(
                     onPressed: () {
+                      // Handle the button tap
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors().red, // Set the background color to red
-                    ),
-                    child: Icon(Icons.delete),
+                    icon: Icon(Icons.delete),
+                    color: AppColors().red, // Set the color of the icon to red
+                    iconSize: 24.sp, // Set the size of the icon as needed
                   ),
+
 
                 ],
               ),
