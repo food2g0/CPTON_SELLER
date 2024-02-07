@@ -11,6 +11,7 @@ import '../Widgets/custom_text_field.dart';
 import '../Widgets/error_dialog.dart';
 import '../Widgets/loading_dialog.dart';
 import '../global/global.dart';
+import '../mainScreen/document_submission.dart';
 import '../mainScreen/home_screen.dart';
 
 class SignUpPage extends StatefulWidget {
@@ -49,7 +50,7 @@ class _SignUpPageState extends State<SignUpPage> {
     "Burger Shop",
     // Add more categories as needed
   ];
- // Default category
+  // Default category
 
   Future<void> _getImage() async {
     imageXFile = await _picker.pickImage(source: ImageSource.gallery);
@@ -72,11 +73,25 @@ class _SignUpPageState extends State<SignUpPage> {
 
     Placemark pMark = placeMarks![0];
 
+    // Check if the subLocality is equal to "Pinamalayan"
+    if (pMark.locality != "Pinamalayan") {
+      showDialog(
+        context: context,
+        builder: (c) {
+          return ErrorDialog(
+            message: "Please select a valid address in Pinamalayan.",
+          );
+        },
+      );
+      return; // Exit the function early
+    }
+
     completeAddress =
     '${pMark.subThoroughfare} ${pMark.thoroughfare}, ${pMark.subLocality} ${pMark.locality}, ${pMark.subAdministrativeArea}, ${pMark.administrativeArea} ${pMark.postalCode}, ${pMark.country}';
 
     locationController.text = completeAddress;
   }
+
 
   Future<void> formValidation() async {
     if (imageXFile == null) {
@@ -136,13 +151,17 @@ class _SignUpPageState extends State<SignUpPage> {
     }
   }
 
+
+
   void authenticateSellerAndSignUp() async {
     User? currentUser;
 
-    await firebaseAuth.createUserWithEmailAndPassword(
+    await firebaseAuth
+        .createUserWithEmailAndPassword(
       email: emailController.text.trim(),
       password: passwordController.text.trim(),
-    ).then((auth) {
+    )
+        .then((auth) {
       currentUser = auth.user;
     }).catchError((error) {
       Navigator.pop(context);
@@ -156,12 +175,22 @@ class _SignUpPageState extends State<SignUpPage> {
     });
 
     if (currentUser != null) {
-      saveDataToFirestore(currentUser!).then((value) {
-        Navigator.pop(context);
-        // Send the user to the homePage
-        Route newRoute = MaterialPageRoute(builder: (c) => HomeScreen());
-        Navigator.pushReplacement(context, newRoute);
-      });
+      await saveDataToFirestore(currentUser!);
+
+      // Check the status before redirecting
+      if (currentUser != null && currentUser!.uid.isNotEmpty) {
+        FirebaseFirestore.instance
+            .collection("sellers")
+            .doc(currentUser?.uid)
+            .get()
+            .then((DocumentSnapshot documentSnapshot) {
+          if (documentSnapshot.exists) {
+            String status = documentSnapshot.get("status");
+          } else {
+            // Handle the case where the document does not exist
+          }
+        });
+      }
     }
   }
 
@@ -174,7 +203,7 @@ class _SignUpPageState extends State<SignUpPage> {
       "sellersphone": phoneController.text.trim(),
       "sellersAddress": completeAddress,
       "sellersCategory": categoryController.text, // Use categoryController.text
-      "status": "approved",
+      "status": "disapproved",
       "earnings": 0.0,
       "lat": position!.latitude,
       "lng": position!.longitude,
@@ -191,6 +220,9 @@ class _SignUpPageState extends State<SignUpPage> {
 
   @override
   Widget build(BuildContext context) {
+
+
+
     double w = MediaQuery.of(context).size.width;
     double h = MediaQuery.of(context).size.height;
     return Scaffold(
@@ -321,7 +353,7 @@ class _SignUpPageState extends State<SignUpPage> {
                           data: Icons.location_city,
                           hintText: "Enter your Address",
                           isObsecure: false,
-                          enabled: true,
+                          enabled: false,
                         ),
                         const SizedBox(height: 20),
                         Container(
@@ -338,7 +370,10 @@ class _SignUpPageState extends State<SignUpPage> {
                               color: Colors.red,
                             ),
                             onPressed: () {
+
                               getCurrentLocation();
+
+
                             },
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.black45,
@@ -356,8 +391,14 @@ class _SignUpPageState extends State<SignUpPage> {
                     width: 150, // Set the desired width
                     child: ElevatedButton(
                       onPressed: () {
+                        // Check if the completeAddress contains "Pinamalayan"
                         formValidation();
+                          Navigator.push(context, MaterialPageRoute(builder: (c) => DocumentSubmission()));
+
+
                       },
+
+
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.black45,
                         padding: const EdgeInsets.symmetric(vertical: 10),
@@ -389,4 +430,5 @@ class _SignUpPageState extends State<SignUpPage> {
       ),
     );
   }
+
 }
