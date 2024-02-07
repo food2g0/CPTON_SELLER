@@ -1,23 +1,15 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cpton_food2go_sellers/Widgets/Dimensions.dart';
 import 'package:cpton_food2go_sellers/mainScreen/chat_screen.dart';
 import 'package:cpton_food2go_sellers/mainScreen/products_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../Widgets/customers_drawer.dart';
 import '../colors.dart';
 import '../global/global.dart';
 import '../uploadScreen/menus_upload_screen.dart';
-void main() {
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: HomeScreen(),
-    );
-  }
-}
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -28,102 +20,158 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
+  late String sellersUID = '';
 
+  @override
+  void initState() {
+    super.initState();
+    fetchSellersUID();
+  }
 
-  final List<Widget> _screens = [
-    HomeTab(),
-    HistoryTab(),
-    Container(),
-    NewOrderTab(),
-  ];
+  void fetchSellersUID() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      setState(() {
+        sellersUID = user.uid;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    List<Color> gradientColors = [
+      AppColors.contentColorCyan,
+      AppColors.contentColorBlue,
+    ];
 
+    bool showAvg = false;
     return Scaffold(
-      backgroundColor: Colors.grey,
+      backgroundColor: AppColors().white1,
       drawer: const CustomersDrawer(),
       appBar: AppBar(
-        iconTheme: IconThemeData(color: Colors.white),
-        backgroundColor: AppColors().red,
+        title: StreamBuilder<DocumentSnapshot>(
+          stream: FirebaseFirestore.instance.collection('sellers').doc(sellersUID).snapshots(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Text("Welcome", style: TextStyle(color: AppColors().black1, fontSize: 12.sp));
+            }
+            if (snapshot.hasError) {
+              return Text('Error: ${snapshot.error}');
+            }
+            var sellerName = snapshot.data!.get('sellersName');
+            return RichText(
+              text: TextSpan(
+                text: 'Welcome, ',
+                style: TextStyle(color: AppColors().black1, fontSize: 14.sp, fontFamily: "Poppins"),
+                children: [
+                  TextSpan(
+                    text: sellerName,
+                    style: TextStyle(color: AppColors().red, fontSize: 14.sp, fontFamily: "Poppins"),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+        iconTheme: IconThemeData(color: AppColors().black),
+        backgroundColor: AppColors().white1,
         automaticallyImplyLeading: true,
         actions: [
-            IconButton(onPressed: (){
-              Navigator.push(context, MaterialPageRoute(builder: (context)=>ChatScreen()));
+          IconButton(
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen()));
             },
-              icon: Container(
-                width: 26,
-                height: 26,
-                child: Image.asset('images/icons/bubble-chat.png',color: Colors.white,),
-              ),)
-        ],
-
-        title: Text(
-          sharedPreferences!.getString("sellersName")!,
-          style: TextStyle(
-            color: Colors.white,
-            fontFamily: "Poppins",
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        centerTitle: true,
-        bottom: PreferredSize(
-          preferredSize: Size.fromHeight(40.0), // Adjust the height as needed
-          child: Container(
-            height: 40,
-            color: Colors.black,
-            child: Center(
-              child:
-                Text(
-                  "Dashboard",
-                  style: TextStyle(
-                    color: Colors.amber,
-                    fontSize: Dimensions.font18,
-                    fontFamily: "Poppins",
-
-                  ),
-                ),
-
+            icon: Container(
+              width: 26,
+              height: 26,
+              child: Image.asset('images/icons/bubble-chat.png', color: AppColors().black),
             ),
-          ),
-        ),
+          )
+        ],
       ),
-
       body: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(
-            child: Card(
-              child: Container(
-                decoration: BoxDecoration(
-                 color: AppColors().black
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(20.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Total Sales',
-                        style: TextStyle(
-                          fontSize: Dimensions.font16,
-                          fontFamily: "Poppins",
-                          fontWeight: FontWeight.w500,
-                          color: AppColors().white,
+            child: Container(
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    StreamBuilder<DocumentSnapshot>(
+                      stream: FirebaseFirestore.instance.collection('sellers').doc(sellersUID).snapshots(),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return CircularProgressIndicator();
+                        }
+                        if (snapshot.hasError) {
+                          return Text('Error: ${snapshot.error}');
+                        }
+                        var earnings = snapshot.data!.get('earnings') ?? 0.0; // Default value if earnings is null
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Total Sales',
+                              style: TextStyle(
+                                fontSize: 12.sp,
+                                fontFamily: "Poppins",
+                                fontWeight: FontWeight.w500,
+                                color: AppColors().black,
+                              ),
+                            ),
+                            SizedBox(height: 5),
+                            Text(
+                              '\Php $earnings',
+                              style: TextStyle(
+                                fontSize: 10.sp,
+                                fontFamily: "Poppins",
+                                color: AppColors().black,
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                    SizedBox(height: 10),
+                    Stack(
+                      children: <Widget>[
+                        AspectRatio(
+                          aspectRatio: 1.70,
+                          child: Padding(
+                            padding: const EdgeInsets.only(
+                              right: 18,
+                              left: 12,
+                              top: 24,
+                              bottom: 12,
+                            ),
+                            child: LineChart(
+                              showAvg ? avgData() : mainData(),
+                            ),
+                          ),
                         ),
-                      ),
-                      SizedBox(height: 10),
-                      Text(
-                        'Php: 1,000 ',
-                        style: TextStyle(
-                          fontSize: Dimensions.font20,
-                          fontFamily: "Poppins",
-                          fontWeight: FontWeight.bold,
-                          color: AppColors().white,
+                        SizedBox(
+                          width: 60,
+                          height: 34,
+                          child: TextButton(
+                            onPressed: () {
+                              setState(() {
+                                showAvg = !showAvg;
+                              });
+                            },
+                            child: Text(
+                              'avg',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: showAvg ?AppColors().red : Colors.red,
+                              ),
+                            ),
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -136,9 +184,9 @@ class _HomeScreenState extends State<HomeScreen> {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(10.0),
                 child: Container(
-                  color: Colors.white70,
+                  color: AppColors().white1,
                   child: Padding(
-                    padding:  EdgeInsets.all(Dimensions.height10),
+                    padding: EdgeInsets.all(Dimensions.height10),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -148,74 +196,74 @@ class _HomeScreenState extends State<HomeScreen> {
                             Icon(
                               Icons.history,
                               size: 24,
-                              color: Color(0xFF721F1F),
+                              color: AppColors().red,
                             ),
                             SizedBox(width: 10),
                             Text(
                               'Transaction Summary',
                               style: TextStyle(
-                                fontSize: Dimensions.font14,
+                                fontSize: 12.sp,
                                 fontFamily: "Poppins",
                                 fontWeight: FontWeight.bold,
-                                color: Colors.black,
+                                color: AppColors().black,
                               ),
                             ),
                           ],
                         ),
-                        SizedBox(height: Dimensions.height10),
+                        SizedBox(height: 10.h),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
                             Card(
-                              color: AppColors().black,
+                              elevation: 2,
                               child: Container(
                                 width: Dimensions.width100,
                                 height: Dimensions.height100,
-                                child:Padding(
-                                  padding: EdgeInsets.all(Dimensions.height5),
+                                child: Padding(
+                                  padding: EdgeInsets.all(5.h),
                                   child: Row(
                                     crossAxisAlignment: CrossAxisAlignment.start,
-                                    children:[
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
                                       Text(
                                         'Products',
                                         style: TextStyle(
-                                          fontSize: Dimensions.font12,
+                                          fontSize: 10.sp,
                                           fontFamily: "Poppins",
-                                          fontWeight: FontWeight.w500,
-                                          color: AppColors().yellow,
+                                          fontWeight: FontWeight.w600,
+                                          color: AppColors().red,
                                         ),
                                       ),
-                                    ]
+                                    ],
                                   ),
                                 ),
                               ),
                             ),
-
                             Card(
-                              color: AppColors().black,
+                              elevation: 2,
                               child: Container(
-                                width: Dimensions.width100,
-                                height: Dimensions.height100,
-                                child:Padding(
-                                  padding:  EdgeInsets.all(Dimensions.height5),
+                                width: 110.w,
+                                height: 100.h,
+                                child: Padding(
+                                  padding: EdgeInsets.all(5.w),
                                   child: Row(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children:[
-                                        Text(
-                                          'Total Order',
-                                          style: TextStyle(
-                                            fontSize: Dimensions.font12,
-                                            fontFamily: "Poppins",
-                                            fontWeight: FontWeight.w500,
-                                            color: AppColors().yellow,
-                                          ),
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Total Order',
+                                        style: TextStyle(
+                                          fontSize: 10.sp,
+                                          fontFamily: "Poppins",
+                                          fontWeight: FontWeight.w600,
+                                          color: AppColors().red,
                                         ),
-                                      ]
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
                             ),
-
                           ],
                         )
                       ],
@@ -230,98 +278,78 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: EdgeInsets.all(Dimensions.height10),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(Dimensions.height10),
-                child: Container(
-                  color: Colors.white70,
-                  child: Padding(
-                    padding: EdgeInsets.all(Dimensions.height10),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ProductsScreen(),
-                              ),
-                            );
-                          },
-                          child: Text(
-                            'View Products',
-                            style: TextStyle(
-                              fontFamily: "Poppins",
-                              fontSize: Dimensions.font14,
+                child: Padding(
+                  padding: EdgeInsets.all(Dimensions.height10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ProductsScreen(),
                             ),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            primary: AppColors().red, // Background color
-                            onPrimary: Colors.white, // Text color
-                            padding: EdgeInsets.symmetric(
-                              vertical: Dimensions.height10,
-                              horizontal: Dimensions.width20,
-                            ),
+                          );
+                        },
+                        child: Text(
+                          'View Products',
+                          style: TextStyle(
+                            fontFamily: "Poppins",
+                            fontSize: Dimensions.font14,
                           ),
                         ),
-                        ElevatedButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => MenusUploadScreen(),
-                              ),
-                            );
-                          },
-                          child: Text(
-                            'Add Products',
-                            style: TextStyle(
-                              fontFamily: "Poppins",
-                              fontSize: Dimensions.font14,
-                            ),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            primary: AppColors().red, // Background color
-                            onPrimary: Colors.white, // Text color
-                            padding: EdgeInsets.symmetric(
-                              vertical: Dimensions.height10,
-                              horizontal: Dimensions.width20,
-                            ),
+                        style: ElevatedButton.styleFrom(
+                          primary: AppColors().red,
+                          onPrimary: Colors.white,
+                          padding: EdgeInsets.symmetric(
+                            vertical: Dimensions.height10,
+                            horizontal: Dimensions.width20,
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => MenusUploadScreen(),
+                            ),
+                          );
+                        },
+                        child: Text(
+                          'Add Products',
+                          style: TextStyle(
+                            fontFamily: "Poppins",
+                            fontSize: Dimensions.font14,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          primary: AppColors().red,
+                          onPrimary: Colors.white,
+                          padding: EdgeInsets.symmetric(
+                            vertical: Dimensions.height10,
+                            horizontal: Dimensions.width20,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
             ),
-          )
-
-
-
-
-
-
-// ...
-
-
-
-          // stream builder here
-
-
+          ),
         ],
       ),
-
       bottomNavigationBar: Theme(
         data: Theme.of(context).copyWith(
-          canvasColor:
-              AppColors().red, // Set the background color of the navigation bar
+          canvasColor: AppColors().black,
         ),
         child: BottomNavigationBar(
           currentIndex: _currentIndex,
           onTap: (int index) {
             setState(() {
               _currentIndex = index;
-
-              // Check if the "Add Products" tab is pressed and navigate to the Add Products page
               if (index == 2) {
                 _navigateToAddProducts(context);
               }
@@ -332,7 +360,7 @@ class _HomeScreenState extends State<HomeScreen> {
               icon: Container(
                 width: 25,
                 height: 25,
-                child: Image.asset('images/icons/home.png',color: Colors.white,),
+                child: Image.asset('images/icons/home.png', color: Colors.white),
               ),
               label: 'Home',
             ),
@@ -340,7 +368,7 @@ class _HomeScreenState extends State<HomeScreen> {
               icon: Container(
                 width: 25,
                 height: 25,
-                child: Image.asset('images/icons/history.png',color: Colors.white,),
+                child: Image.asset('images/icons/history.png', color: Colors.white),
               ),
               label: 'History',
             ),
@@ -348,7 +376,7 @@ class _HomeScreenState extends State<HomeScreen> {
               icon: Container(
                 width: 25,
                 height: 25,
-                child: Image.asset('images/icons/add-to-cart.png',color: Colors.white,),
+                child: Image.asset('images/icons/add-to-cart.png', color: Colors.white),
               ),
               label: 'Add Products',
             ),
@@ -356,7 +384,7 @@ class _HomeScreenState extends State<HomeScreen> {
               icon: Container(
                 width: 25,
                 height: 25,
-                child: Image.asset('images/icons/notification.png',color: Colors.white,),
+                child: Image.asset('images/icons/notification.png', color: Colors.white),
               ),
               label: 'Notification',
             ),
@@ -367,7 +395,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _navigateToAddProducts(BuildContext context) {
-    // Navigate to the Add Products page
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -375,8 +402,244 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-}
 
+  Widget bottomTitleWidgets(double value, TitleMeta meta) {
+    const style = TextStyle(
+      fontSize: 10,
+      fontFamily: "Poppins"
+    );
+    late Widget text;
+    switch (value.toInt()) {
+      case 2:
+        text = const Text('Jan', style: style);
+        break;
+      case 5:
+        text = const Text('Feb', style: style);
+        break;
+      case 8:
+        text = const Text('March', style: style);
+        break;
+      default:
+        text = const Text('', style: style);
+        break;
+    }
+    return SideTitleWidget(
+      axisSide: meta.axisSide,
+      child: text,
+    );
+  }
+
+  Widget leftTitleWidgets(double value, TitleMeta meta) {
+    const style = TextStyle(
+      fontWeight: FontWeight.w600,
+      fontSize: 10,
+      fontFamily: "Poppins"
+    );
+    late String text;
+    switch (value.toInt()) {
+      case 1:
+        text = '100';
+        break;
+      case 3:
+        text = '500';
+        break;
+      case 5:
+        text = '1000';
+        break;
+      default:
+        return Container();
+    }
+    return Text(text, style: style, textAlign: TextAlign.left);
+  }
+
+  LineChartData mainData() {
+    List<Color> gradientColors = [
+      AppColors.contentColorCyan,
+      AppColors.contentColorBlue,
+    ];
+
+    return LineChartData(
+      gridData: FlGridData(
+        show: true,
+        drawVerticalLine: true,
+        horizontalInterval: 1,
+        verticalInterval: 1,
+        getDrawingHorizontalLine: (value) {
+          return const FlLine(
+            color: AppColors.mainGridLineColor,
+            strokeWidth: 1,
+          );
+        },
+        getDrawingVerticalLine: (value) {
+          return const FlLine(
+            color: AppColors.mainGridLineColor,
+            strokeWidth: 1,
+          );
+        },
+      ),
+      titlesData: FlTitlesData(
+        show: true,
+        rightTitles: const AxisTitles(
+          sideTitles: SideTitles(showTitles: false),
+        ),
+        topTitles: const AxisTitles(
+          sideTitles: SideTitles(showTitles: false),
+        ),
+        bottomTitles: AxisTitles(
+          sideTitles: SideTitles(
+            showTitles: true,
+            reservedSize: 30,
+            interval: 1,
+            getTitlesWidget: bottomTitleWidgets,
+          ),
+        ),
+        leftTitles: AxisTitles(
+          sideTitles: SideTitles(
+            showTitles: true,
+            interval: 1,
+            getTitlesWidget: leftTitleWidgets,
+            reservedSize: 40.w,
+          ),
+        ),
+      ),
+      borderData: FlBorderData(
+        show: true,
+        border: Border.all(color: const Color(0xff37434d)),
+      ),
+      minX: 0,
+      maxX: 11,
+      minY: 0,
+      maxY: 6,
+      lineBarsData: [
+        LineChartBarData(
+          spots: const [
+            FlSpot(2, 2),
+            FlSpot(0, 0),
+            FlSpot(0, 0),
+            FlSpot(0, 0),
+            FlSpot(0, 0),
+            FlSpot(0, 0),
+            FlSpot(0, 0),
+          ],
+          isCurved: true,
+          gradient: LinearGradient(
+            colors: gradientColors,
+          ),
+          barWidth: 2,
+          isStrokeCapRound: true,
+          dotData: const FlDotData(
+            show: false,
+          ),
+          belowBarData: BarAreaData(
+            show: true,
+            gradient: LinearGradient(
+              colors: gradientColors
+                  .map((color) => color.withOpacity(0.3))
+                  .toList(),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  LineChartData avgData() {
+    return LineChartData(
+      lineTouchData: const LineTouchData(enabled: false),
+      gridData: FlGridData(
+        show: true,
+        drawHorizontalLine: true,
+        verticalInterval: 1,
+        horizontalInterval: 1,
+        getDrawingVerticalLine: (value) {
+          return FlLine(
+            color: AppColors().red,
+            strokeWidth: 1,
+          );
+        },
+        getDrawingHorizontalLine: (value) {
+          return FlLine(
+            color: AppColors().red,
+            strokeWidth: 1,
+          );
+        },
+      ),
+      titlesData: FlTitlesData(
+        show: true,
+        bottomTitles: AxisTitles(
+          sideTitles: SideTitles(
+            showTitles: true,
+            reservedSize: 30,
+            getTitlesWidget: bottomTitleWidgets,
+            interval: 1,
+          ),
+        ),
+        leftTitles: AxisTitles(
+          sideTitles: SideTitles(
+            showTitles: true,
+            getTitlesWidget: leftTitleWidgets,
+            reservedSize: 42,
+            interval: 1,
+          ),
+        ),
+        topTitles: const AxisTitles(
+          sideTitles: SideTitles(showTitles: false),
+        ),
+        rightTitles: const AxisTitles(
+          sideTitles: SideTitles(showTitles: false),
+        ),
+      ),
+      borderData: FlBorderData(
+        show: true,
+        border: Border.all(color: const Color(0xff37434d)),
+      ),
+      minX: 10,
+      maxX: 11,
+      minY: 10,
+      maxY: 6,
+      lineBarsData: [
+        LineChartBarData(
+          spots: const [
+            FlSpot(0, 0),
+            FlSpot(2.6, 3.44),
+            FlSpot(4.9, 3.44),
+            FlSpot(6.8, 3.44),
+            FlSpot(8, 3.44),
+            FlSpot(9.5, 3.44),
+            FlSpot(11, 3.44),
+          ],
+          isCurved: true,
+          gradient: LinearGradient(
+            colors: [
+              ColorTween(begin: AppColors().green, end: AppColors().green)
+                  .lerp(0.2)!,
+              ColorTween(begin: AppColors().green, end: AppColors().green)
+                  .lerp(0.2)!,
+            ],
+          ),
+          barWidth: 5,
+          isStrokeCapRound: true,
+          dotData: const FlDotData(
+            show: false,
+          ),
+          belowBarData: BarAreaData(
+            show: true,
+            gradient: LinearGradient(
+              colors: [
+                ColorTween(begin: AppColors().green, end: AppColors().green)
+                    .lerp(0.2)!
+                    .withOpacity(0.1),
+                ColorTween(begin: AppColors().green, end: AppColors().green)
+                    .lerp(0.2)!
+                    .withOpacity(0.1),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
 
 class HomeTab extends StatelessWidget {
   @override
