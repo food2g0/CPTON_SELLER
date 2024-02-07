@@ -346,51 +346,64 @@ class _HomeScreenState extends State<HomeScreen> {
           canvasColor: AppColors().black,
         ),
         child: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: (int index) {
-            setState(() {
-              _currentIndex = index;
-              if (index == 2) {
-                _navigateToAddProducts(context);
-              }
-            });
-          },
-          items: [
-            BottomNavigationBarItem(
-              icon: Container(
-                width: 25,
-                height: 25,
-                child: Image.asset('images/icons/home.png', color: Colors.white),
-              ),
-              label: 'Home',
+        currentIndex: _currentIndex,
+        onTap: (int index) {
+          setState(() {
+            _currentIndex = index;
+            if (index == 2) {
+              _navigateToAddProducts(context);
+            }
+          });
+        },
+        items: [
+          BottomNavigationBarItem(
+            icon: Container(
+              width: 20.w,
+              height: 20.h,
+              child: Image.asset('images/icons/home.png', color: Colors.white),
             ),
-            BottomNavigationBarItem(
-              icon: Container(
-                width: 25,
-                height: 25,
-                child: Image.asset('images/icons/history.png', color: Colors.white),
-              ),
-              label: 'History',
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Container(
+              width: 20.w,
+              height: 20.h,
+              child: Image.asset('images/icons/history.png', color: Colors.white),
             ),
-            BottomNavigationBarItem(
-              icon: Container(
-                width: 25,
-                height: 25,
-                child: Image.asset('images/icons/add-to-cart.png', color: Colors.white),
-              ),
-              label: 'Add Products',
+            label: 'History',
+          ),
+          BottomNavigationBarItem(
+            icon: Container(
+              width: 20.w,
+              height: 20.h,
+              child: Image.asset('images/icons/add-to-cart.png', color: Colors.white),
             ),
-            BottomNavigationBarItem(
-              icon: Container(
-                width: 25,
-                height: 25,
-                child: Image.asset('images/icons/notification.png', color: Colors.white),
-              ),
-              label: 'Notification',
+            label: 'Add Products',
+          ),
+          BottomNavigationBarItem(
+            icon: Container(
+              width: 20.w,
+              height: 20.h,
+              child: Image.asset('images/icons/notification.png', color: Colors.white),
             ),
-          ],
+            label: 'Notification',
+          ),
+        ],
+        selectedItemColor: Colors.white,
+        unselectedItemColor: Colors.grey, // Change as needed
+        selectedLabelStyle: TextStyle(
+          fontFamily: 'Poppins', // Change the font family as needed
+          fontSize: 10.sp, // Change the font size as needed
+          fontWeight: FontWeight.bold, // Change the font weight as needed
+        ),
+        unselectedLabelStyle: TextStyle(
+          fontFamily: 'Poppins', // Change the font family as needed
+          fontSize: 10.sp, // Change the font size as needed
+          fontWeight: FontWeight.normal, // Change the font weight as needed
         ),
       ),
+
+    ),
     );
   }
 
