@@ -95,11 +95,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Card(
               child: Container(
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topRight,
-                    end: Alignment.bottomLeft,
-                    colors: [AppColors().dark, AppColors().DarkBlue], // Adjust colors as needed
-                  ),
+                 color: AppColors().black
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(20.0),
@@ -171,7 +167,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
                             Card(
-                              color: AppColors().DarkBlue,
+                              color: AppColors().black,
                               child: Container(
                                 width: Dimensions.width100,
                                 height: Dimensions.height100,
@@ -196,7 +192,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
 
                             Card(
-                              color: AppColors().DarkBlue,
+                              color: AppColors().black,
                               child: Container(
                                 width: Dimensions.width100,
                                 height: Dimensions.height100,
@@ -219,30 +215,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                             ),
-                            Card(
-                              color: AppColors().DarkBlue,
-                              child: Container(
-                                width: Dimensions.width100,
-                                height: Dimensions.height100,
-                                child:Padding(
-                                  padding:  EdgeInsets.all(Dimensions.height5),
-                                  child: Row(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children:[
-                                        Text(
-                                          'Cancelled',
-                                          style: TextStyle(
-                                            fontSize: Dimensions.font12,
-                                            fontFamily: "Poppins",
-                                            fontWeight: FontWeight.w500,
-                                            color: AppColors().yellow,
-                                          ),
-                                        ),
-                                      ]
-                                  ),
-                                ),
-                              ),
-                            ),
+
                           ],
                         )
                       ],

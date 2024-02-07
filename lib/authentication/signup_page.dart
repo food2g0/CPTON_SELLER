@@ -391,7 +391,7 @@ class _SignUpPageState extends State<SignUpPage> {
                     width: 150, // Set the desired width
                     child: ElevatedButton(
                       onPressed: () {
-                        // Check if the completeAddress contains "Pinamalayan"
+
                         formValidation();
                           Navigator.push(context, MaterialPageRoute(builder: (c) => DocumentSubmission()));
 

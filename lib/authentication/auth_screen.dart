@@ -10,6 +10,7 @@ import '../Widgets/custom_text_field.dart';
 import '../Widgets/error_dialog.dart';
 import '../Widgets/loading_dialog.dart';
 import '../global/global.dart';
+import '../mainScreen/confirmation_screen.dart';
 import '../mainScreen/home_screen.dart';
 
 class AuthScreen extends StatefulWidget {
@@ -88,16 +89,52 @@ class _AuthScreenState extends State<AuthScreen> {
     }
   }
 
-  Future readDataAndSetDataLocally(User currentUser) async
-  {
-    await FirebaseFirestore.instance.collection("sellers")
+  Future<void> readDataAndSetDataLocally(User currentUser) async {
+    await FirebaseFirestore.instance
+        .collection("sellers")
         .doc(currentUser.uid)
         .get()
         .then((snapshot) async {
-      await sharedPreferences!.setString("sellersUID", currentUser.uid);
-      await sharedPreferences!.setString("sellersEmail", snapshot.data()!["sellersEmail"]);
-      await sharedPreferences!.setString("sellersName", snapshot.data()!["sellersName"]);
-      await sharedPreferences!.setString("sellersImageUrl", snapshot.data()!["sellersImageUrl"]);
+      if (snapshot.exists) {
+        String status = snapshot.data()!["status"];
+
+        if (status == "disapproved") {
+          // Status is disapproved, navigate to the ConfirmationScreen
+          Navigator.pop(context);
+          Route newRoute = MaterialPageRoute(
+            builder: (c) => const ConfirmationScreen(),
+          );
+          Navigator.pushReplacement(context, newRoute);
+        } else {
+          // Status is not disapproved, proceed with login
+          await sharedPreferences!.setString("sellersUID", currentUser.uid);
+          await sharedPreferences!.setString("sellersEmail", snapshot.data()!["sellersEmail"]);
+          await sharedPreferences!.setString("sellersName", snapshot.data()!["sellersName"]);
+          await sharedPreferences!.setString("sellersImageUrl", snapshot.data()!["sellersImageUrl"]);
+
+          Navigator.pop(context);
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (c) => const HomeScreen()),
+          );
+        }
+      } else {
+        firebaseAuth.signOut();
+        Navigator.pop(context);
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (c) => const AuthScreen()),
+        );
+
+        showDialog(
+          context: context,
+          builder: (c) {
+            return ErrorDialog(
+              message: "No record exists.",
+            );
+          },
+        );
+      }
     });
   }
 

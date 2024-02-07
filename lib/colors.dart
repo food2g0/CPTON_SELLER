@@ -1,14 +1,14 @@
 import 'dart:ui';
 
 class AppColors {
-  final white = const Color(0xFFFDF0D5);
-  final red = const Color(0xFF890010);
-  final yellow = const Color(0xFFFAA307);
-  final dark = const Color(0xFF03071E);
-  final DarkBlue = const Color(0xFF003049);
-  final Orange = const Color(0xFFBB3E03);
+  final white = const Color(0xFFFFFFFF);
+  final red = const Color(0xFFE82F45);
+  final green = const Color(0xFF178F39);
+  final yellow = const Color(0xFFFBCD42);
+  final black = const Color(0xFF191919);
+  final black1 = const Color(0xFF9AA1A9);
 
   // Define gradient colors
-  final startColor = const Color(0xFFD00000);
-  final endColor = const Color(0xFF9D0208);
+  final startColor = const Color(0xFFE14F4F);
+  final endColor = const Color(0xFF890010);
 }
