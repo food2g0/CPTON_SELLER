@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cpton_food2go_sellers/colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart' as storageRef;
 import '../Widgets/error_dialog.dart';
@@ -40,35 +42,20 @@ class _MenusUploadScreenState extends State<MenusUploadScreen> {
     return Material(
       // Set the background color of the Material widget
       child: Scaffold(
+        backgroundColor: AppColors().white1,
         appBar: AppBar(
-          backgroundColor: Colors.black87,
-          automaticallyImplyLeading: true,
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back_ios_new_outlined),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (c) => HomeScreen()),
-              );
-            },
-          ),
+          backgroundColor: AppColors().red,
           title: Text(
             "Add New Menu",
+            style: TextStyle(
+              color: AppColors().white,
+              fontSize: 12.sp,
+              fontFamily: "Poppins"
+            ),
           ),
-          centerTitle: true,
         ),
         body: Container(
-          decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.black45,
-                  Colors.black26,
-                ],
-                begin: FractionalOffset(0.0, 0.0),
-                end: FractionalOffset(1.0, 0.0),
-                stops: [0.0, 1.0],
-                tileMode: TileMode.clamp,
-              )),
+
           child: Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -84,11 +71,13 @@ class _MenusUploadScreenState extends State<MenusUploadScreen> {
                 ElevatedButton(
                   child: Text(
                     "Add New Menu",
-                    style: TextStyle(color: Colors.black, fontSize: 18),
+                    style: TextStyle(color: AppColors().white,
+                        fontSize: 12.sp,
+                    fontFamily: "Poppins"),
                   ),
                   style: ButtonStyle(
                     backgroundColor:
-                    MaterialStateProperty.all<Color>(Colors.amber),
+                    MaterialStateProperty.all<Color>(AppColors().red),
                     shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                       RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -115,27 +104,38 @@ class _MenusUploadScreenState extends State<MenusUploadScreen> {
           title: Text(
             "Menu Image",
             style: TextStyle(
-                color: Colors.red[900], fontWeight: FontWeight.bold),
+                color: AppColors().black, fontWeight: FontWeight.w600,
+            fontFamily: "Poppins",
+            fontSize: 14.sp),
           ),
           children: [
             SimpleDialogOption(
               child: Text(
                 "Capture with Camera",
-                style: TextStyle(color: Colors.black),
+                style: TextStyle(
+                    color: AppColors().black, fontWeight: FontWeight.w500,
+                    fontFamily: "Poppins",
+                    fontSize: 10.sp),
               ),
               onPressed: captureImageWithCamera,
             ),
             SimpleDialogOption(
               child: Text(
                 "Select From Gallery",
-                style: TextStyle(color: Colors.black),
+                style: TextStyle(
+                    color: AppColors().black, fontWeight: FontWeight.w500,
+                    fontFamily: "Poppins",
+                    fontSize: 10.sp),
               ),
               onPressed: pickImageFromGallery,
             ),
             SimpleDialogOption(
               child: Text(
                 "Cancel",
-                style: TextStyle(color: Colors.black),
+                style: TextStyle(
+                    color: AppColors().black, fontWeight: FontWeight.w500,
+                    fontFamily: "Poppins",
+                    fontSize: 10.sp),
               ),
               onPressed: () => Navigator.pop(context),
             )
@@ -188,36 +188,34 @@ class _MenusUploadScreenState extends State<MenusUploadScreen> {
   menusUploadFormScreen() {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.black87,
+        backgroundColor: AppColors().red,
         automaticallyImplyLeading: true,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new_outlined),
-          onPressed: () {
-            clearMenusUploadForm();
-          },
-        ),
+
         actions: [],
         title: Text(
-          "Uploading New Menu",
+          "Uploading New Menu",style: TextStyle(
+          fontSize: 12.sp,
+          fontFamily: "Poppins",
+          color: AppColors().white
         ),
-        centerTitle: true,
+        ),
       ),
       body: ListView(
         children: [
           uploading == true ? LinearProgressIndicator() : Text(""),
           Container(
-            height: 230,
+            height: 270.h,
             width: MediaQuery.of(context).size.width * 0.8,
             child: Center(
               child: AspectRatio(
-                aspectRatio: 16 / 9,
+                aspectRatio: 10 / 9,
                 child: Container(
                   decoration: BoxDecoration(
                     image: DecorationImage(
                       image: FileImage(
                         File(imageXFile!.path),
                       ),
-                      fit: BoxFit.fill,
+                      fit: BoxFit.contain,
                     ),
                   ),
                 ),
@@ -226,14 +224,16 @@ class _MenusUploadScreenState extends State<MenusUploadScreen> {
           ),
           ListTile(
             leading: Icon(Icons.perm_device_info_outlined,
-                color: Colors.red[700]),
+                color: AppColors().red),
             title: Container(
               width: 250,
               child: TextFormField(
-                style: TextStyle(color: Colors.black),
+                style: TextStyle(color: AppColors().black1,
+                fontFamily: "Poppins",
+                fontSize: 12.sp),
                 controller: shortInfoController,
                 decoration: InputDecoration(
-                  hintText: "Menu Info",
+                  hintText: "Menu Info(Optional)",
                   hintStyle: TextStyle(color: Colors.grey),
                   border: OutlineInputBorder(),
                 ),
@@ -241,9 +241,9 @@ class _MenusUploadScreenState extends State<MenusUploadScreen> {
             ),
           ),
           ListTile(
-            leading: Icon(Icons.fastfood_sharp, color: Colors.red[700]),
+            leading: Icon(Icons.fastfood_sharp, color: AppColors().red),
             title: Container(
-              width: 250,
+              width: 150,
               child:DropdownButtonFormField<String>(
                 value: selectedOption,
                 onChanged: (String? newValue) {
@@ -264,17 +264,19 @@ class _MenusUploadScreenState extends State<MenusUploadScreen> {
                 ),
               ),
             ),
-            trailing: Container(
-              width: 100,
-              child: ElevatedButton(
-                child: Text("Add Menu"),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                ),
-                onPressed: uploading ? null : () => uploadValidateForm(),
+          ),
+          SizedBox(height: 20.h,),
+          Container(
+            width: 90.w,
+            height: 50.h,
+            child: ElevatedButton(
+              child: Text("Add Menu"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
               ),
+              onPressed: uploading ? null : () => uploadValidateForm(),
             ),
-          )
+          ),
         ],
       ),
     );

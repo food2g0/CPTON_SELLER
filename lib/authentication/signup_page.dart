@@ -202,25 +202,25 @@ class _SignUpPageState extends State<SignUpPage> {
       // Add fields specific to January sales if needed
       "saleVal": 0.0,
       "colorVal": "0xFFe63946",
-      "saleYear": "January"
+      "saleYear": "Jan"
     });
     await salesCollection.doc("02_February").set({
       // Add fields specific to February sales if needed
       "saleVal": 0.0,
       "color": "0xFFe63946",
-      "saleYear": "February"
+      "saleYear": "Feb"
     });
     await salesCollection.doc("03_March").set({
       // Add fields specific to March sales if needed
       "saleVal": 0.0,
       "colorVal": "0xFFe63946",
-      "saleYear": "March"
+      "saleYear": "Mar"
     });
     await salesCollection.doc("04_April").set({
       // Add fields specific to March sales if needed
       "saleVal": 0.0,
       "colorVal": "0xFFe63946",
-      "saleYear": "April"
+      "saleYear": "Apr"
     });
     await salesCollection.doc("05_May").set({
       // Add fields specific to March sales if needed

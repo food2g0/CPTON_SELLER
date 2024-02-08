@@ -4,12 +4,18 @@ import 'package:cpton_food2go_sellers/Widgets/Dimensions.dart';
 import 'package:cpton_food2go_sellers/mainScreen/chat_screen.dart';
 import 'package:cpton_food2go_sellers/mainScreen/products_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart' as storageRef;
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:image_picker/image_picker.dart';
 import '../Widgets/customers_drawer.dart';
+import '../Widgets/error_dialog.dart';
 import '../colors.dart';
+import '../global/global.dart';
 import '../models/Sales.dart';
 import '../uploadScreen/menus_upload_screen.dart';
+import 'package:path/path.dart' as path;
+import 'dart:io';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -19,6 +25,26 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+
+  XFile? imageXFile;
+  final ImagePicker _picker = ImagePicker();
+
+  TextEditingController shortInfoController = TextEditingController();
+  String selectedOption = "Burger"; // Variable to hold the selected option
+  String uniqueIdName = DateTime.now().millisecondsSinceEpoch.toString();
+  bool uploading = false;
+
+  clearMenusUploadForm() {
+    setState(() {
+      shortInfoController.clear();
+      imageXFile = null;
+      selectedOption = ""; // Clear the selected option when clearing the form
+    });
+  }
+
+  // Define a list of available options
+  List<String> options = ["Burger", "Fries", "Drinks"];
+
   int _currentIndex = 0;
   late String sellersUID = '';
 
@@ -59,7 +85,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
     return Scaffold(
-      backgroundColor: AppColors().white1,
+      backgroundColor: AppColors().white,
       drawer: const CustomersDrawer(),
       appBar: AppBar(
         title: StreamBuilder<DocumentSnapshot>(
@@ -75,11 +101,11 @@ class _HomeScreenState extends State<HomeScreen> {
             return RichText(
               text: TextSpan(
                 text: 'Welcome, ',
-                style: TextStyle(color: AppColors().black1, fontSize: 14.sp, fontFamily: "Poppins"),
+                style: TextStyle(color: AppColors().black, fontSize: 14.sp, fontFamily: "Poppins"),
                 children: [
                   TextSpan(
                     text: sellerName,
-                    style: TextStyle(color: AppColors().red, fontSize: 14.sp, fontFamily: "Poppins"),
+                    style: TextStyle(color: AppColors().white, fontSize: 14.sp, fontFamily: "Poppins"),
                   ),
                 ],
               ),
@@ -87,7 +113,7 @@ class _HomeScreenState extends State<HomeScreen> {
           },
         ),
         iconTheme: IconThemeData(color: AppColors().black),
-        backgroundColor: AppColors().white1,
+        backgroundColor: AppColors().red,
         automaticallyImplyLeading: true,
         actions: [
           IconButton(
@@ -271,12 +297,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       ElevatedButton(
                         onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => MenusUploadScreen(),
-                            ),
-                          );
+                          Navigator.push(context, MaterialPageRoute(builder: (c)=>MenusUploadScreen()));
                         },
                         child: Text(
                           'Add Products',
@@ -367,6 +388,19 @@ class _HomeScreenState extends State<HomeScreen> {
     );
 
   }
+
+// Define a method to show the upload dialog
+
+
+
+
+
+
+
+
+
+
+
   Widget _buildChart(BuildContext context, List<Sales> sales){
     myData = sales;
     _generateData(myData);
@@ -394,7 +428,18 @@ class _HomeScreenState extends State<HomeScreen> {
                     _seriesBarData,
                     animate: true,
                     animationDuration: Duration(seconds: 2),
+                    primaryMeasureAxis: charts.NumericAxisSpec(
+                      renderSpec: charts.GridlineRendererSpec(
+                        labelStyle: charts.TextStyleSpec(
+                          fontSize: 6, // Adjust the font size as needed
+                          color: charts.MaterialPalette.black, // Adjust the font color as needed
+                          fontFamily: 'Poppins', // Change the font family to your desired font
+                        ),
+                      ),
+                    ),
+
                   ),
+
                 ),
               ],
             ),
@@ -409,12 +454,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
   void _navigateToAddProducts(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => MenusUploadScreen(),
-      ),
-    );
+
   }
 }
 
