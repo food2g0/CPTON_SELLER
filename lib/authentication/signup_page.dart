@@ -195,6 +195,40 @@ class _SignUpPageState extends State<SignUpPage> {
   }
 
   Future saveDataToFirestore(User currentUser) async {
+    CollectionReference salesCollection = FirebaseFirestore.instance.collection("sellers").doc(currentUser.uid).collection("sales");
+
+    // Create documents for January, February, and March
+    await salesCollection.doc("01_January").set({
+      // Add fields specific to January sales if needed
+      "saleVal": 0.0,
+      "colorVal": "0xFFe63946",
+      "saleYear": "January"
+    });
+    await salesCollection.doc("02_February").set({
+      // Add fields specific to February sales if needed
+      "saleVal": 0.0,
+      "color": "0xFFe63946",
+      "saleYear": "February"
+    });
+    await salesCollection.doc("03_March").set({
+      // Add fields specific to March sales if needed
+      "saleVal": 0.0,
+      "colorVal": "0xFFe63946",
+      "saleYear": "March"
+    });
+    await salesCollection.doc("04_April").set({
+      // Add fields specific to March sales if needed
+      "saleVal": 0.0,
+      "colorVal": "0xFFe63946",
+      "saleYear": "April"
+    });
+    await salesCollection.doc("05_May").set({
+      // Add fields specific to March sales if needed
+      "saleVal": 0.0,
+      "colorVal": "0xFFe63946",
+      "saleYear": "May"
+    });
+
     FirebaseFirestore.instance.collection("sellers").doc(currentUser.uid).set({
       "sellersUID": currentUser.uid,
       "sellersEmail": currentUser.email,

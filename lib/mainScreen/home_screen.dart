@@ -1,14 +1,14 @@
+import 'package:charts_flutter_new/flutter.dart' as charts;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cpton_food2go_sellers/Widgets/Dimensions.dart';
 import 'package:cpton_food2go_sellers/mainScreen/chat_screen.dart';
 import 'package:cpton_food2go_sellers/mainScreen/products_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../Widgets/customers_drawer.dart';
 import '../colors.dart';
-import '../global/global.dart';
+import '../models/Sales.dart';
 import '../uploadScreen/menus_upload_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -36,15 +36,28 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     }
   }
+  List<charts.Series<Sales, String>> _seriesBarData = [];
+
+  late List<Sales>  myData;
+
+  _generateData(myData) {
+    _seriesBarData.add(
+      charts.Series(
+        domainFn: (Sales sales, _) => sales.saleYear.toString(),
+        measureFn: (Sales sales, _) => sales.saleVal,
+        colorFn: (Sales sales, _) => charts.ColorUtil.fromDartColor(Color(int.parse(sales.colorVal))),
+        id: 'Sales',
+        data: myData,
+        labelAccessorFn: (Sales row, _) => "${row.saleYear}",
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    List<Color> gradientColors = [
-      AppColors.contentColorCyan,
-      AppColors.contentColorBlue,
-    ];
 
-    bool showAvg = false;
+
+
     return Scaffold(
       backgroundColor: AppColors().white1,
       drawer: const CustomersDrawer(),
@@ -99,85 +112,33 @@ class _HomeScreenState extends State<HomeScreen> {
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    StreamBuilder<DocumentSnapshot>(
-                      stream: FirebaseFirestore.instance.collection('sellers').doc(sellersUID).snapshots(),
-                      builder: (context, snapshot) {
+                    StreamBuilder<QuerySnapshot>(
+                      stream: FirebaseFirestore.instance.collection('sellers').doc(sellersUID)
+                          .collection("sales").snapshots(),
+                      builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                         if (snapshot.connectionState == ConnectionState.waiting) {
-                          return CircularProgressIndicator();
-                        }
-                        if (snapshot.hasError) {
+                          return LinearProgressIndicator();
+                        } else if (snapshot.hasError) {
                           return Text('Error: ${snapshot.error}');
+                        } else if (!snapshot.hasData || snapshot.data == null) {
+                          return Text('No data available');
+                        } else {
+                          List<Sales> sales = snapshot.data!.docs
+                              .map((documentSnapshot) => Sales.fromMap(documentSnapshot.data() as Map<String, dynamic>))
+                              .toList();
+                          print(sales);
+                          return _buildChart(context, sales);
                         }
-                        var earnings = snapshot.data!.get('earnings') ?? 0.0; // Default value if earnings is null
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Total Sales',
-                              style: TextStyle(
-                                fontSize: 12.sp,
-                                fontFamily: "Poppins",
-                                fontWeight: FontWeight.w500,
-                                color: AppColors().black,
-                              ),
-                            ),
-                            SizedBox(height: 5),
-                            Text(
-                              '\Php $earnings',
-                              style: TextStyle(
-                                fontSize: 10.sp,
-                                fontFamily: "Poppins",
-                                color: AppColors().black,
-                              ),
-                            ),
-                          ],
-                        );
                       },
                     ),
+
+
                     SizedBox(height: 10),
-                    Stack(
-                      children: <Widget>[
-                        AspectRatio(
-                          aspectRatio: 1.70,
-                          child: Padding(
-                            padding: const EdgeInsets.only(
-                              right: 18,
-                              left: 12,
-                              top: 24,
-                              bottom: 12,
-                            ),
-                            child: LineChart(
-                              showAvg ? avgData() : mainData(),
-                            ),
-                          ),
-                        ),
-                        SizedBox(
-                          width: 60,
-                          height: 34,
-                          child: TextButton(
-                            onPressed: () {
-                              setState(() {
-                                showAvg = !showAvg;
-                              });
-                            },
-                            child: Text(
-                              'avg',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: showAvg ?AppColors().red : Colors.red,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
                   ],
                 ),
               ),
             ),
           ),
-
-
           SliverToBoxAdapter(
             child: Padding(
               padding: EdgeInsets.all(Dimensions.height10),
@@ -346,66 +307,106 @@ class _HomeScreenState extends State<HomeScreen> {
           canvasColor: AppColors().black,
         ),
         child: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (int index) {
-          setState(() {
-            _currentIndex = index;
-            if (index == 2) {
-              _navigateToAddProducts(context);
-            }
-          });
-        },
-        items: [
-          BottomNavigationBarItem(
-            icon: Container(
-              width: 20.w,
-              height: 20.h,
-              child: Image.asset('images/icons/home.png', color: Colors.white),
+          currentIndex: _currentIndex,
+          onTap: (int index) {
+            setState(() {
+              _currentIndex = index;
+              if (index == 2) {
+                _navigateToAddProducts(context);
+              }
+            });
+          },
+          items: [
+            BottomNavigationBarItem(
+              icon: Container(
+                width: 20.w,
+                height: 20.h,
+                child: Image.asset('images/icons/home.png', color: Colors.white),
+              ),
+              label: 'Home',
             ),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Container(
-              width: 20.w,
-              height: 20.h,
-              child: Image.asset('images/icons/history.png', color: Colors.white),
+            BottomNavigationBarItem(
+              icon: Container(
+                width: 20.w,
+                height: 20.h,
+                child: Image.asset('images/icons/history.png', color: Colors.white),
+              ),
+              label: 'History',
             ),
-            label: 'History',
-          ),
-          BottomNavigationBarItem(
-            icon: Container(
-              width: 20.w,
-              height: 20.h,
-              child: Image.asset('images/icons/add-to-cart.png', color: Colors.white),
+            BottomNavigationBarItem(
+              icon: Container(
+                width: 20.w,
+                height: 20.h,
+                child: Image.asset('images/icons/add-to-cart.png', color: Colors.white),
+              ),
+              label: 'Add Products',
             ),
-            label: 'Add Products',
-          ),
-          BottomNavigationBarItem(
-            icon: Container(
-              width: 20.w,
-              height: 20.h,
-              child: Image.asset('images/icons/notification.png', color: Colors.white),
+            BottomNavigationBarItem(
+              icon: Container(
+                width: 20.w,
+                height: 20.h,
+                child: Image.asset('images/icons/notification.png', color: Colors.white),
+              ),
+              label: 'Notification',
             ),
-            label: 'Notification',
+          ],
+          selectedItemColor: Colors.white,
+          unselectedItemColor: Colors.grey, // Change as needed
+          selectedLabelStyle: TextStyle(
+            fontFamily: 'Poppins', // Change the font family as needed
+            fontSize: 10.sp, // Change the font size as needed
+            fontWeight: FontWeight.bold, // Change the font weight as needed
           ),
-        ],
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.grey, // Change as needed
-        selectedLabelStyle: TextStyle(
-          fontFamily: 'Poppins', // Change the font family as needed
-          fontSize: 10.sp, // Change the font size as needed
-          fontWeight: FontWeight.bold, // Change the font weight as needed
-        ),
-        unselectedLabelStyle: TextStyle(
-          fontFamily: 'Poppins', // Change the font family as needed
-          fontSize: 10.sp, // Change the font size as needed
-          fontWeight: FontWeight.normal, // Change the font weight as needed
+          unselectedLabelStyle: TextStyle(
+            fontFamily: 'Poppins', // Change the font family as needed
+            fontSize: 10.sp, // Change the font size as needed
+            fontWeight: FontWeight.normal, // Change the font weight as needed
+          ),
         ),
       ),
-
-    ),
     );
+
   }
+  Widget _buildChart(BuildContext context, List<Sales> sales){
+    myData = sales;
+    _generateData(myData);
+    return Card(
+      child: Padding(
+        padding: EdgeInsets.all(8.w),
+        child: Container(
+          height: 300, // Set a finite height
+          child: Center(
+            child: Column(
+              children: <Widget>[
+                Text(
+                  "Sales by Month",
+                  style: TextStyle(
+                    color: AppColors().black,
+                    fontFamily: "Poppins",
+                    fontSize: 12.sp,
+                  ),
+                ),
+                SizedBox(
+                  height: 10.h,
+                ),
+                Expanded(
+                  child: charts.BarChart(
+                    _seriesBarData,
+                    animate: true,
+                    animationDuration: Duration(seconds: 2),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+  }
+
+
+
 
   void _navigateToAddProducts(BuildContext context) {
     Navigator.push(
@@ -413,243 +414,6 @@ class _HomeScreenState extends State<HomeScreen> {
       MaterialPageRoute(
         builder: (context) => MenusUploadScreen(),
       ),
-    );
-  }
-
-  Widget bottomTitleWidgets(double value, TitleMeta meta) {
-    const style = TextStyle(
-      fontSize: 10,
-      fontFamily: "Poppins"
-    );
-    late Widget text;
-    switch (value.toInt()) {
-      case 2:
-        text = const Text('Jan', style: style);
-        break;
-      case 5:
-        text = const Text('Feb', style: style);
-        break;
-      case 8:
-        text = const Text('March', style: style);
-        break;
-      default:
-        text = const Text('', style: style);
-        break;
-    }
-    return SideTitleWidget(
-      axisSide: meta.axisSide,
-      child: text,
-    );
-  }
-
-  Widget leftTitleWidgets(double value, TitleMeta meta) {
-    const style = TextStyle(
-      fontWeight: FontWeight.w600,
-      fontSize: 10,
-      fontFamily: "Poppins"
-    );
-    late String text;
-    switch (value.toInt()) {
-      case 1:
-        text = '100';
-        break;
-      case 3:
-        text = '500';
-        break;
-      case 5:
-        text = '1000';
-        break;
-      default:
-        return Container();
-    }
-    return Text(text, style: style, textAlign: TextAlign.left);
-  }
-
-  LineChartData mainData() {
-    List<Color> gradientColors = [
-      AppColors.contentColorCyan,
-      AppColors.contentColorBlue,
-    ];
-
-    return LineChartData(
-      gridData: FlGridData(
-        show: true,
-        drawVerticalLine: true,
-        horizontalInterval: 1,
-        verticalInterval: 1,
-        getDrawingHorizontalLine: (value) {
-          return const FlLine(
-            color: AppColors.mainGridLineColor,
-            strokeWidth: 1,
-          );
-        },
-        getDrawingVerticalLine: (value) {
-          return const FlLine(
-            color: AppColors.mainGridLineColor,
-            strokeWidth: 1,
-          );
-        },
-      ),
-      titlesData: FlTitlesData(
-        show: true,
-        rightTitles: const AxisTitles(
-          sideTitles: SideTitles(showTitles: false),
-        ),
-        topTitles: const AxisTitles(
-          sideTitles: SideTitles(showTitles: false),
-        ),
-        bottomTitles: AxisTitles(
-          sideTitles: SideTitles(
-            showTitles: true,
-            reservedSize: 30,
-            interval: 1,
-            getTitlesWidget: bottomTitleWidgets,
-          ),
-        ),
-        leftTitles: AxisTitles(
-          sideTitles: SideTitles(
-            showTitles: true,
-            interval: 1,
-            getTitlesWidget: leftTitleWidgets,
-            reservedSize: 40.w,
-          ),
-        ),
-      ),
-      borderData: FlBorderData(
-        show: true,
-        border: Border.all(color: const Color(0xff37434d)),
-      ),
-      minX: 0,
-      maxX: 11,
-      minY: 0,
-      maxY: 6,
-      lineBarsData: [
-        LineChartBarData(
-          spots:  [
-            FlSpot(2.9, 2),
-            FlSpot(0, 0),
-            FlSpot(0, 0),
-            FlSpot(0, 0),
-            FlSpot(0, 0),
-            FlSpot(0, 0),
-            FlSpot(0, 0),
-          ],
-          isCurved: true,
-          gradient: LinearGradient(
-            colors: gradientColors,
-          ),
-          barWidth: 2,
-          isStrokeCapRound: true,
-          dotData: const FlDotData(
-            show: false,
-          ),
-          belowBarData: BarAreaData(
-            show: true,
-            gradient: LinearGradient(
-              colors: gradientColors
-                  .map((color) => color.withOpacity(0.3))
-                  .toList(),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  LineChartData avgData() {
-    return LineChartData(
-      lineTouchData: const LineTouchData(enabled: false),
-      gridData: FlGridData(
-        show: true,
-        drawHorizontalLine: true,
-        verticalInterval: 1,
-        horizontalInterval: 1,
-        getDrawingVerticalLine: (value) {
-          return FlLine(
-            color: AppColors().red,
-            strokeWidth: 1,
-          );
-        },
-        getDrawingHorizontalLine: (value) {
-          return FlLine(
-            color: AppColors().red,
-            strokeWidth: 1,
-          );
-        },
-      ),
-      titlesData: FlTitlesData(
-        show: true,
-        bottomTitles: AxisTitles(
-          sideTitles: SideTitles(
-            showTitles: true,
-            reservedSize: 30,
-            getTitlesWidget: bottomTitleWidgets,
-            interval: 1,
-          ),
-        ),
-        leftTitles: AxisTitles(
-          sideTitles: SideTitles(
-            showTitles: true,
-            getTitlesWidget: leftTitleWidgets,
-            reservedSize: 42,
-            interval: 1,
-          ),
-        ),
-        topTitles: const AxisTitles(
-          sideTitles: SideTitles(showTitles: false),
-        ),
-        rightTitles: const AxisTitles(
-          sideTitles: SideTitles(showTitles: false),
-        ),
-      ),
-      borderData: FlBorderData(
-        show: true,
-        border: Border.all(color: const Color(0xff37434d)),
-      ),
-      minX: 10,
-      maxX: 11,
-      minY: 10,
-      maxY: 6,
-      lineBarsData: [
-        LineChartBarData(
-          spots: const [
-            FlSpot(0, 0),
-            FlSpot(2.6, 3.44),
-            FlSpot(4.9, 3.44),
-            FlSpot(6.8, 3.44),
-            FlSpot(8, 3.44),
-            FlSpot(9.5, 3.44),
-            FlSpot(11, 3.44),
-          ],
-          isCurved: true,
-          gradient: LinearGradient(
-            colors: [
-              ColorTween(begin: AppColors().green, end: AppColors().green)
-                  .lerp(0.2)!,
-              ColorTween(begin: AppColors().green, end: AppColors().green)
-                  .lerp(0.2)!,
-            ],
-          ),
-          barWidth: 5,
-          isStrokeCapRound: true,
-          dotData: const FlDotData(
-            show: false,
-          ),
-          belowBarData: BarAreaData(
-            show: true,
-            gradient: LinearGradient(
-              colors: [
-                ColorTween(begin: AppColors().green, end: AppColors().green)
-                    .lerp(0.2)!
-                    .withOpacity(0.1),
-                ColorTween(begin: AppColors().green, end: AppColors().green)
-                    .lerp(0.2)!
-                    .withOpacity(0.1),
-              ],
-            ),
-          ),
-        ),
-      ],
     );
   }
 }
@@ -679,4 +443,7 @@ class NewOrderTab extends StatelessWidget {
       child: Text('New Order Tab Content'),
     );
   }
+
+
+
 }

@@ -82,10 +82,7 @@ class _AuthScreenState extends State<AuthScreen> {
     });
     if(currentUser != null)
     {
-      readDataAndSetDataLocally(currentUser!).then((value){
-        Navigator.pop(context);
-        Navigator.push(context, MaterialPageRoute(builder: (c)=> const HomeScreen()));
-      });
+      readDataAndSetDataLocally(currentUser!);
     }
   }
 
@@ -99,14 +96,15 @@ class _AuthScreenState extends State<AuthScreen> {
         String status = snapshot.data()!["status"];
 
         if (status == "disapproved") {
+          print("Status is disapproved: $status");
           // Status is disapproved, navigate to the ConfirmationScreen
           Navigator.pop(context);
           Route newRoute = MaterialPageRoute(
             builder: (c) => const ConfirmationScreen(),
           );
           Navigator.pushReplacement(context, newRoute);
-        } else {
-          // Status is not disapproved, proceed with login
+        } else if (status == "approved") {
+          // Status is approved, proceed to the HomeScreen
           await sharedPreferences!.setString("sellersUID", currentUser.uid);
           await sharedPreferences!.setString("sellersEmail", snapshot.data()!["sellersEmail"]);
           await sharedPreferences!.setString("sellersName", snapshot.data()!["sellersName"]);
@@ -117,8 +115,7 @@ class _AuthScreenState extends State<AuthScreen> {
             context,
             MaterialPageRoute(builder: (c) => const HomeScreen()),
           );
-        }
-      } else {
+        } else {
         firebaseAuth.signOut();
         Navigator.pop(context);
         Navigator.push(
@@ -132,10 +129,11 @@ class _AuthScreenState extends State<AuthScreen> {
             return ErrorDialog(
               message: "No record exists.",
             );
+
           },
         );
       }
-    });
+    }});
   }
 
   @override
