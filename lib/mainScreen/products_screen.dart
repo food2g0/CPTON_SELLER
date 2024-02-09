@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cpton_food2go_sellers/colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 
 import '../Widgets/info_design.dart';
@@ -8,15 +10,22 @@ import '../global/global.dart';
 import '../models/menus.dart';
 
 class ProductsScreen extends StatelessWidget {
-  const ProductsScreen({super.key});
+
+  final Menus? model;
+
+  const ProductsScreen({super.key, this.model});
 
 
   @override
   Widget build(BuildContext context) {
+
+
+
+
     return Scaffold(
       appBar: AppBar(
         iconTheme: IconThemeData(color: Colors.white),
-        backgroundColor: Colors.red[900],
+        backgroundColor: AppColors().red,
         automaticallyImplyLeading: true,
         actions: [
           IconButton(onPressed: (){},
@@ -27,27 +36,20 @@ class ProductsScreen extends StatelessWidget {
             ),)
         ],
 
-        title: Text(
-          sharedPreferences!.getString("sellersName")!,
-          style: TextStyle(
-            color: Colors.white,
-            fontFamily: "Poppins",
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        centerTitle: true,
+
         bottom: PreferredSize(
           preferredSize: Size.fromHeight(40.0), // Adjust the height as needed
           child: Container(
             height: 40,
-            color: Colors.black,
+            color: AppColors().black,
             child: Center(
               child:
               Text(
                 "My Menus",
                 style: TextStyle(
                   color: Colors.amber,
-                  fontSize: 18,
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
                   fontFamily: "Poppins",
 
                 ),

@@ -1,7 +1,9 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cpton_food2go_sellers/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart' as storageRef;
 import '../Widgets/error_dialog.dart';
@@ -11,12 +13,10 @@ import '../global/global.dart';
 import '../mainScreen/home_screen.dart';
 import '../models/menus.dart';
 
-class ItemsUploadScreen extends StatefulWidget
-{
+class ItemsUploadScreen extends StatefulWidget {
   final Menus? model;
 
   ItemsUploadScreen({this.model});
-
 
   @override
   State<ItemsUploadScreen> createState() => _ItemsUploadScreenState();
@@ -31,49 +31,35 @@ class _ItemsUploadScreenState extends State<ItemsUploadScreen> {
   TextEditingController priceController = TextEditingController();
   TextEditingController quantityController = TextEditingController();
 
-
   String uniqueIdName = DateTime.now().millisecondsSinceEpoch.toString();
   bool uploading = false;
+  bool hasVariation = false; // Flag to determine if the product has variations
 
-  clearMenusUploadForm() {
-    setState(() {
-      imageXFile = null;
-    });
-  }
+  List<Map<String, dynamic>> variations = [
+    {'name': 'Small', 'price': ''},
+    {'name': 'Medium', 'price': ''},
+    {'name': 'Large', 'price': ''}
+  ]; // List to store variations and prices
 
-  defaultScreen() {
+  List<Map<String, dynamic>> flavors = []; // List to store dynamically added flavors
+
+  Widget defaultScreen() {
     return Material(
-      // Set the background color of the Material widget
       child: Scaffold(
+        backgroundColor: AppColors().white,
         appBar: AppBar(
-          backgroundColor: Colors.black87,
+          backgroundColor: AppColors().red,
           automaticallyImplyLeading: true,
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back_ios_new_outlined),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (c) => HomeScreen()),
-              );
-            },
-          ),
           title: Text(
             "Add New Products",
+            style: TextStyle(
+              color: AppColors().white,
+              fontSize: 12.sp,
+              fontFamily: "Poppins",
+            ),
           ),
-          centerTitle: true,
         ),
         body: Container(
-          decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.black45,
-                  Colors.black26,
-                ],
-                begin: FractionalOffset(0.0, 0.0),
-                end: FractionalOffset(1.0, 0.0),
-                stops: [0.0, 1.0],
-                tileMode: TileMode.clamp,
-              )),
           child: Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -89,11 +75,17 @@ class _ItemsUploadScreenState extends State<ItemsUploadScreen> {
                 ElevatedButton(
                   child: Text(
                     "Add New Products",
-                    style: TextStyle(color: Colors.black, fontSize: 18),
+                    style: TextStyle(
+                      fontWeight: FontWeight.w500,
+                      color: AppColors().white,
+                      fontSize: 12.sp,
+                      fontFamily: "Poppins",
+                    ),
                   ),
                   style: ButtonStyle(
-                    backgroundColor:
-                    MaterialStateProperty.all<Color>(Colors.amber),
+                    backgroundColor: MaterialStateProperty.all<Color>(
+                      AppColors().red,
+                    ),
                     shape: MaterialStateProperty.all<RoundedRectangleBorder>(
                       RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -111,7 +103,6 @@ class _ItemsUploadScreenState extends State<ItemsUploadScreen> {
       ),
     );
   }
-
   takeImage(mContext) {
     return showDialog(
       context: mContext,
@@ -163,14 +154,13 @@ class _ItemsUploadScreenState extends State<ItemsUploadScreen> {
     });
   }
 
-
   pickImageFromGallery() async {
     Navigator.pop(context);
     imageXFile = await _picker.pickImage(
       source: ImageSource.gallery,
       maxHeight: 720,
       maxWidth: 1280,
-      imageQuality: 50, // Adjust image quality as needed
+      imageQuality: 50,
     );
     if (imageXFile != null) {
       String fileExtension = path.extension(imageXFile!.path);
@@ -193,22 +183,19 @@ class _ItemsUploadScreenState extends State<ItemsUploadScreen> {
     }
   }
 
-  menusUploadFormScreen() {
+  Widget menusUploadFormScreen() {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.black87,
+        backgroundColor: AppColors().red,
         automaticallyImplyLeading: true,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new_outlined),
-          onPressed: () {
-            clearMenusUploadForm();
-          },
-        ),
         actions: [],
         title: Text(
-          "Uploading New Menu",
+          "Uploading New Products",
+          style: TextStyle(
+            fontSize: 12.sp,
+            color: AppColors().white,
+          ),
         ),
-        centerTitle: true,
       ),
       body: ListView(
         children: [
@@ -234,125 +221,272 @@ class _ItemsUploadScreenState extends State<ItemsUploadScreen> {
               ),
             ),
           ),
-          SizedBox(height: 30,),
+          SizedBox(height: 30),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Product Has Variation?',
+                style: TextStyle(fontFamily: "Poppins", fontSize: 12.sp),
+              ),
+              Switch(
+                value: hasVariation,
+                onChanged: (value) {
+                  setState(() {
+                    hasVariation = value;
+                  });
+                },
+              ),
+            ],
+          ),
+          // Conditionally render buildVariationInputs() based on hasVariation flag
+          if (hasVariation) buildVariationInputs(),
+          SizedBox(height: 20),
+          // Input fields for title, description, quantity, and price
           ListTile(
-            leading: Icon(Icons.fastfood,
-                color: Colors.red[700]),
+            leading: Icon(Icons.fastfood, color: AppColors().red),
             title: Container(
               width: 250,
               child: TextFormField(
-                style: TextStyle(color: Colors.black),
+                style: TextStyle(color: AppColors().black1),
                 controller: titleController,
                 decoration: InputDecoration(
                   hintText: "Title",
-                  hintStyle: TextStyle(color: Colors.grey),
+                  hintStyle: TextStyle(
+                    color: AppColors().black1,
+                    fontSize: 12.sp,
+                    fontFamily: "Poppins",
+                  ),
                   border: OutlineInputBorder(),
                 ),
               ),
             ),
           ),
           ListTile(
-            leading: Icon(Icons.description_outlined,
-                color: Colors.red[700]),
+            leading: Icon(Icons.description_outlined, color: AppColors().red),
             title: Container(
               width: 250,
               child: TextFormField(
-                style: TextStyle(color: Colors.black),
+                style: TextStyle(color: AppColors().black1),
                 controller: descriptionController,
                 decoration: InputDecoration(
                   hintText: "Description",
-                  hintStyle: TextStyle(color: Colors.grey),
+                  hintStyle: TextStyle(
+                    color: AppColors().black1,
+                    fontSize: 12.sp,
+                    fontFamily: "Poppins",
+                  ),
                   border: OutlineInputBorder(),
                 ),
               ),
             ),
           ),
           ListTile(
-            leading: Icon(
-              Icons.attach_money,
-              color: Colors.red[700],
-            ),
+            leading: Icon(Icons.shopping_cart, color: AppColors().red),
             title: Container(
               width: 250,
               child: TextFormField(
-                style: TextStyle(color: Colors.black),
-                controller: priceController, // Use priceController for the price input
-                keyboardType: TextInputType.number, // Set the keyboard type to number
+                style: TextStyle(color: AppColors().black1),
+                controller: quantityController,
+                keyboardType: TextInputType.number,
                 inputFormatters: <TextInputFormatter>[
-                  FilteringTextInputFormatter.digitsOnly // Allow only digits
-                ],
-                decoration: InputDecoration(
-                  hintText: "Price",
-                  hintStyle: TextStyle(color: Colors.grey),
-                  border: OutlineInputBorder(),
-                ),
-              ),
-            ),
-          ),
-          ListTile(
-            leading: Icon(
-              Icons.shopping_cart,
-              color: Colors.red[700],
-            ),
-            title: Container(
-              width: 250,
-              child: TextFormField(
-                style: TextStyle(color: Colors.black),
-                controller: quantityController, // Use quantityController for the quantity input
-                keyboardType: TextInputType.number, // Set the keyboard type to number
-                inputFormatters: <TextInputFormatter>[
-                  FilteringTextInputFormatter.digitsOnly // Allow only digits
+                  FilteringTextInputFormatter.digitsOnly
                 ],
                 decoration: InputDecoration(
                   hintText: "Quantity",
-                  hintStyle: TextStyle(color: Colors.grey),
+                  hintStyle: TextStyle(
+                    color: AppColors().black1,
+                    fontSize: 12.sp,
+                    fontFamily: "Poppins",
+                  ),
                   border: OutlineInputBorder(),
                 ),
               ),
             ),
           ),
-          SizedBox(height: 20,),
-          Center(
-            child: SizedBox(
-              width: 150, // Set the width as desired
-              child: ElevatedButton(
-                onPressed: uploading ? null : () => uploadValidateForm(),
-                child: Text("Upload Products"),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
+          ListTile(
+            leading: Icon(Icons.attach_money, color: AppColors().red),
+            title: Container(
+              width: 250,
+              child: TextFormField(
+                style: TextStyle(color: AppColors().black1),
+                controller: priceController,
+                keyboardType: TextInputType.number,
+                inputFormatters: <TextInputFormatter>[
+                  FilteringTextInputFormatter.digitsOnly
+                ],
+                decoration: InputDecoration(
+                  hintText: "Price",
+                  hintStyle: TextStyle(
+                    color: AppColors().black1,
+                    fontSize: 12.sp,
+                    fontFamily: "Poppins",
+                  ),
+                  border: OutlineInputBorder(),
                 ),
               ),
-
             ),
           ),
-
-
-
+          SizedBox(height: 20),
+          // Button to add new flavor
+          ElevatedButton(
+            onPressed: uploading ? null : () => uploadValidateForm(),
+            child: Text(
+              "Upload Products",
+              style: TextStyle(
+                color: AppColors().white,
+                fontSize: 12.sp,
+                fontFamily: "Poppins",
+              ),
+            ),
+            style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors().red,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.w))),
+          ),
         ],
       ),
     );
   }
 
+  Widget buildVariationInputs() {
+    return Column(
+      children: [
+        // Existing variation inputs
+        ...variations.map((variation) {
+          return Column(
+            children: [
+              ListTile(
+                leading: Icon(
+                  Icons.attach_money,
+                  color: Colors.red[700],
+                ),
+                title: Text(
+                  variation['name'],
+                  style: TextStyle(
+                    fontFamily: "Poppins",
+                    fontSize: 12.sp,
+                    color: AppColors().black,
+                  ),
+                ),
+                subtitle: TextFormField(
+                  onChanged: (value) {
+                    setState(() {
+                      variation['price'] = value;
+                    });
+                  },
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: 'Price',
+                    labelStyle: TextStyle(
+                      color: AppColors().black1,
+                      fontSize: 12.sp,
+                      fontFamily: "Poppins",
+                    ),
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ),
+              SizedBox(height: 20),
+            ],
+          );
+        }),
+
+        // Dynamic flavor inputs
+        ...flavors.map((flavor) {
+          return Column(
+            children: [
+              ListTile(
+                leading: Icon(
+                  Icons.fastfood,
+                  color: AppColors().red,
+                ),
+                title: Container(
+                  width: 250,
+                  child: TextFormField(
+                    style: TextStyle(color: AppColors().black1),
+                    onChanged: (value) {
+                      setState(() {
+                        flavor['name'] = value;
+                      });
+                    },
+                    decoration: InputDecoration(
+                      hintText: "Flavor",
+                      hintStyle: TextStyle(
+                        color: AppColors().black1,
+                        fontSize: 12.sp,
+                      ),
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+              ),
+              ListTile(
+                leading: Icon(
+                  Icons.attach_money,
+                  color: Colors.red[700],
+                ),
+                title: TextFormField(
+                  onChanged: (value) {
+                    setState(() {
+                      flavor['price'] = value;
+                    });
+                  },
+                  keyboardType: TextInputType.number,
+                  decoration: InputDecoration(
+                    labelText: 'Price',
+                    labelStyle: TextStyle(
+                      color: AppColors().black1,
+                      fontSize: 12.sp,
+                      fontFamily: "Poppins",
+                    ),
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ),
+              SizedBox(height: 20),
+            ],
+          );
+        }),
+
+        // Button to add new flavor
+        ElevatedButton(
+          onPressed: () {
+            setState(() {
+              flavors.add({'name': '', 'price': ''});
+            });
+          },
+          child: Text(
+            "Add Flavor",
+            style: TextStyle(
+              color: AppColors().white,
+              fontSize: 12.sp,
+              fontFamily: "Poppins",
+            ),
+          ),
+          style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors().red,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.w))),
+        ),
+        SizedBox(height: 20),
+      ],
+    );
+  }
+
+  clearMenusUploadForm() {
+    setState(() {
+      imageXFile = null;
+    });
+  }
+
   uploadValidateForm() async {
     if (imageXFile != null) {
-      if (descriptionController.text.isNotEmpty && titleController.text.isNotEmpty && priceController.text.isNotEmpty) {
-        setState(() {
-          uploading = true;
-        });
-        //uploading image
-        String downloadUrl = await uploadImage(File(imageXFile!.path));
-        //save info to fireStore
-        saveInfo(downloadUrl);
-      } else {
-        showDialog(
-          context: context,
-          builder: (c) {
-            return ErrorDialog(
-              message: "Please fill all the forms.",
-            );
-          },
-        );
-      }
+      setState(() {
+        uploading = true;
+      });
+      String downloadUrl = await uploadImage(File(imageXFile!.path));
+      saveInfo(downloadUrl);
     } else {
       showDialog(
         context: context,
@@ -364,16 +498,13 @@ class _ItemsUploadScreenState extends State<ItemsUploadScreen> {
       );
     }
   }
-  // Method to delete the item
 
-
-  saveInfo(
-      String downloadUrl
-      ) {
+  saveInfo(String downloadUrl) {
     final ref = FirebaseFirestore.instance
         .collection("sellers")
         .doc(sharedPreferences!.getString("sellersUID"))
-        .collection("menus").doc(widget.model!.menuID)
+        .collection("menus")
+        .doc(widget.model!.menuID)
         .collection("items");
 
     ref.doc(uniqueIdName).set({
@@ -388,9 +519,10 @@ class _ItemsUploadScreenState extends State<ItemsUploadScreen> {
       "publishedDate": DateTime.now(),
       "status": "available",
       "thumbnailUrl": downloadUrl,
+      "variations": variations,
+      "flavors": flavors, // Include flavors in the saved data
     }).then((value) {
-      final itemsRef = FirebaseFirestore.instance
-          .collection("items");
+      final itemsRef = FirebaseFirestore.instance.collection("items");
 
       itemsRef.doc(uniqueIdName).set({
         "productsID": uniqueIdName,
@@ -404,29 +536,35 @@ class _ItemsUploadScreenState extends State<ItemsUploadScreen> {
         "publishedDate": DateTime.now(),
         "status": "available",
         "thumbnailUrl": downloadUrl,
+        "variations": variations,
+        "flavors": flavors, // Include flavors in the saved data
       });
-    }).then((value){
-    clearMenusUploadForm();
-    setState(() {
-      uniqueIdName = DateTime.now().millisecondsSinceEpoch.toString();
-      uploading = false;
-    });
+    }).then((value) {
+      clearMenusUploadForm();
+      setState(() {
+        uniqueIdName = DateTime.now().millisecondsSinceEpoch.toString();
+        uploading = false;
+      });
     });
   }
 
-
   uploadImage(mImageFile) async {
-    storageRef.Reference reference = storageRef.FirebaseStorage.instance.ref()
+    storageRef.Reference reference = storageRef.FirebaseStorage.instance
+        .ref()
         .child("items");
 
-    storageRef.UploadTask uploadTask = reference.child(uniqueIdName + ".jpg").putFile(mImageFile);
+    storageRef.UploadTask uploadTask = reference
+        .child(uniqueIdName + ".jpg")
+        .putFile(mImageFile);
 
-    storageRef.TaskSnapshot taskSnapshot = await uploadTask.whenComplete(() {});
+    storageRef.TaskSnapshot taskSnapshot =
+    await uploadTask.whenComplete(() {});
 
     String downloadURL = await taskSnapshot.ref.getDownloadURL();
 
     return downloadURL;
   }
+
   @override
   Widget build(BuildContext context) {
     return imageXFile == null ? defaultScreen() : menusUploadFormScreen();

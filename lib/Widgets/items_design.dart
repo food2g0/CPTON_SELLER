@@ -1,8 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cpton_food2go_sellers/Widgets/Dimensions.dart';
 import 'package:cpton_food2go_sellers/colors.dart';
 import 'package:cpton_food2go_sellers/mainScreen/edit_item_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import '../global/global.dart';
 import '../models/items.dart';
 
 class ItemsDesignWidget extends StatefulWidget {
@@ -19,6 +21,36 @@ class ItemsDesignWidget extends StatefulWidget {
 class _ItemsDesignWidgetState extends State<ItemsDesignWidget> {
   @override
   Widget build(BuildContext context) {
+
+    void deleteMenu() async {
+      try {
+        // Get the current user's sellersUID
+        String? sellersUID = sharedPreferences!.getString("sellersUID");
+
+        if (sellersUID != null) {
+          // Delete the menu document from Firestore
+          await FirebaseFirestore.instance
+              .collection("sellers")
+              .doc(sellersUID)
+              .collection("menus")
+              .doc(widget.model!.menuID)
+              .collection("items")
+              .doc(widget.model!.productsID)// Use the current menu's ID
+              .delete();
+
+          // Optionally, you can add a success message or perform any other actions
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Menu deleted successfully")),
+          );
+        }
+      } catch (error) {
+        // Handle any errors that occur during deletion
+        print("Error deleting menu: $error");
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Failed to delete menu")),
+        );
+      }
+    }
 
     return InkWell(
       onTap: () {
@@ -73,11 +105,10 @@ class _ItemsDesignWidgetState extends State<ItemsDesignWidget> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 // Center the icon and text horizontally
                 children: [
-                  Icon(
-                    Icons.price_check,
-                    color: AppColors().green,
-                    size: 16.sp,
-                  ),
+                  Image.asset('images/icons/peso.png',
+                      width: 20.w,
+                      height: 20.h,
+                      color: AppColors().red),
                   SizedBox(width: 4),
                   Text(
                     'Php. ' + widget.model!.productPrice.toString() + '.00',
@@ -114,6 +145,7 @@ class _ItemsDesignWidgetState extends State<ItemsDesignWidget> {
                   IconButton(
                     onPressed: () {
                       // Handle the button tap
+                      deleteMenu();
                     },
                     icon: Icon(Icons.delete),
                     color: AppColors().red, // Set the color of the icon to red

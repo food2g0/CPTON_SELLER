@@ -283,15 +283,14 @@ class _HomeScreenState extends State<HomeScreen> {
                           'View Products',
                           style: TextStyle(
                             fontFamily: "Poppins",
-                            fontSize: Dimensions.font14,
+                            fontSize: 12.sp,
                           ),
                         ),
                         style: ElevatedButton.styleFrom(
-                          primary: AppColors().red,
-                          onPrimary: Colors.white,
-                          padding: EdgeInsets.symmetric(
-                            vertical: Dimensions.height10,
-                            horizontal: Dimensions.width20,
+                          foregroundColor: AppColors().white, backgroundColor: AppColors().red,
+                          fixedSize: Size(160.w, 50.h),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8.0.w),
                           ),
                         ),
                       ),
@@ -300,21 +299,21 @@ class _HomeScreenState extends State<HomeScreen> {
                           Navigator.push(context, MaterialPageRoute(builder: (c)=>MenusUploadScreen()));
                         },
                         child: Text(
-                          'Add Products',
+                          'Add Menu',
                           style: TextStyle(
                             fontFamily: "Poppins",
-                            fontSize: Dimensions.font14,
+                            fontSize: 12.sp,
                           ),
                         ),
                         style: ElevatedButton.styleFrom(
-                          primary: AppColors().red,
-                          onPrimary: Colors.white,
-                          padding: EdgeInsets.symmetric(
-                            vertical: Dimensions.height10,
-                            horizontal: Dimensions.width20,
+                          foregroundColor: AppColors().white, backgroundColor: AppColors().red,
+                          fixedSize: Size(160.w, 50.h), // Set width and height as needed
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8.0), // Set border radius as needed
                           ),
                         ),
                       ),
+
                     ],
                   ),
                 ),
@@ -388,16 +387,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
 
   }
-
-// Define a method to show the upload dialog
-
-
-
-
-
-
-
-
 
 
 

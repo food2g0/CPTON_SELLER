@@ -90,23 +90,6 @@ flutter:
   # list giving the asset and other descriptors for the font. For
   # example:
   fonts:
-    - family: Bebas
-      fonts:
-        - asset: assets/fonts/BebasNeue-Regular.ttf
-    - family: Lobster
-      fonts:
-        - asset: assets/fonts/Lobster-Regular.ttf
-    - family: Signatra
-      fonts:
-        - asset: assets/fonts/Signatra.ttf
-    - family: Varela
-      fonts:
-        - asset: assets/fonts/VarelaRound-Regular.ttf
-    - family: Montserrat
-      fonts:
-        - asset: assets/fonts/Montserrat.ttf
-        - asset: assets/fonts/Montserrat-Bold.ttf
-        - asset: assets/fonts/Montserrat-Regular.ttf
     - family:  Poppins
       fonts:
         - asset: assets/fonts/Poppins-Regular.ttf
