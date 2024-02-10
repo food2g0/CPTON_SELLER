@@ -22,25 +22,34 @@ class _ItemsDesignWidgetState extends State<ItemsDesignWidget> {
   @override
   Widget build(BuildContext context) {
 
-    void deleteMenu() async {
+    void deleteItem() async {
       try {
         // Get the current user's sellersUID
         String? sellersUID = sharedPreferences!.getString("sellersUID");
 
         if (sellersUID != null) {
-          // Delete the menu document from Firestore
+          // Delete the menu document from the 'menus' collection
           await FirebaseFirestore.instance
               .collection("sellers")
               .doc(sellersUID)
               .collection("menus")
               .doc(widget.model!.menuID)
-              .collection("items")
-              .doc(widget.model!.productsID)// Use the current menu's ID
+          .collection("items").doc(widget.model?.productsID)
               .delete();
+
+          // Delete all items in the 'items' subcollection under the menu
+          QuerySnapshot itemsSnapshot = await FirebaseFirestore.instance
+              .collection("items")
+              .get();
+
+          // Loop through each item and delete it
+          for (QueryDocumentSnapshot doc in itemsSnapshot.docs) {
+            await doc.reference.delete();
+          }
 
           // Optionally, you can add a success message or perform any other actions
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Menu deleted successfully")),
+            SnackBar(content: Text("Menu and associated items deleted successfully")),
           );
         }
       } catch (error) {
@@ -51,6 +60,7 @@ class _ItemsDesignWidgetState extends State<ItemsDesignWidget> {
         );
       }
     }
+
 
     return InkWell(
       onTap: () {
@@ -145,7 +155,7 @@ class _ItemsDesignWidgetState extends State<ItemsDesignWidget> {
                   IconButton(
                     onPressed: () {
                       // Handle the button tap
-                      deleteMenu();
+                      deleteItem();
                     },
                     icon: Icon(Icons.delete),
                     color: AppColors().red, // Set the color of the icon to red

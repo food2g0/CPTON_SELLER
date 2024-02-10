@@ -10,7 +10,7 @@ class Sales {
   Sales.fromMap(Map<String, dynamic> map)
       : assert(map['saleVal'] != null),
         assert(map['saleYear'] != null),
-        saleVal = (map['saleVal'] as num).toInt(),
+        saleVal = (map['saleVal']).toInt(),
 
         colorVal = _parseColorValue(map['colorVal']), // Ensure colorVal is a valid color
         saleYear = map['saleYear'];

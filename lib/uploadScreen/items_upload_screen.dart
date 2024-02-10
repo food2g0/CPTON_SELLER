@@ -35,11 +35,7 @@ class _ItemsUploadScreenState extends State<ItemsUploadScreen> {
   bool uploading = false;
   bool hasVariation = false; // Flag to determine if the product has variations
 
-  List<Map<String, dynamic>> variations = [
-    {'name': 'Small', 'price': ''},
-    {'name': 'Medium', 'price': ''},
-    {'name': 'Large', 'price': ''}
-  ]; // List to store variations and prices
+  List<Map<String, dynamic>> variations = []; // List to store variations and prices
 
   List<Map<String, dynamic>> flavors = []; // List to store dynamically added flavors
 
@@ -103,6 +99,7 @@ class _ItemsUploadScreenState extends State<ItemsUploadScreen> {
       ),
     );
   }
+
   takeImage(mContext) {
     return showDialog(
       context: mContext,
@@ -352,49 +349,9 @@ class _ItemsUploadScreenState extends State<ItemsUploadScreen> {
   Widget buildVariationInputs() {
     return Column(
       children: [
-        // Existing variation inputs
-        ...variations.map((variation) {
-          return Column(
-            children: [
-              ListTile(
-                leading: Icon(
-                  Icons.attach_money,
-                  color: Colors.red[700],
-                ),
-                title: Text(
-                  variation['name'],
-                  style: TextStyle(
-                    fontFamily: "Poppins",
-                    fontSize: 12.sp,
-                    color: AppColors().black,
-                  ),
-                ),
-                subtitle: TextFormField(
-                  onChanged: (value) {
-                    setState(() {
-                      variation['price'] = value;
-                    });
-                  },
-                  keyboardType: TextInputType.number,
-                  decoration: InputDecoration(
-                    labelText: 'Price',
-                    labelStyle: TextStyle(
-                      color: AppColors().black1,
-                      fontSize: 12.sp,
-                      fontFamily: "Poppins",
-                    ),
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-              ),
-              SizedBox(height: 20),
-            ],
-          );
-        }),
-
-        // Dynamic flavor inputs
-        ...flavors.map((flavor) {
-          return Column(
+        // Iterate through the list of variations and build input fields for each
+        for (int i = 0; i < variations.length; i++)
+          Column(
             children: [
               ListTile(
                 leading: Icon(
@@ -407,11 +364,11 @@ class _ItemsUploadScreenState extends State<ItemsUploadScreen> {
                     style: TextStyle(color: AppColors().black1),
                     onChanged: (value) {
                       setState(() {
-                        flavor['name'] = value;
+                        variations[i]['name'] = value; // Update variation name
                       });
                     },
                     decoration: InputDecoration(
-                      hintText: "Flavor",
+                      hintText: "Variation",
                       hintStyle: TextStyle(
                         color: AppColors().black1,
                         fontSize: 12.sp,
@@ -429,7 +386,7 @@ class _ItemsUploadScreenState extends State<ItemsUploadScreen> {
                 title: TextFormField(
                   onChanged: (value) {
                     setState(() {
-                      flavor['price'] = value;
+                      variations[i]['price'] = value; // Update variation price
                     });
                   },
                   keyboardType: TextInputType.number,
@@ -446,14 +403,68 @@ class _ItemsUploadScreenState extends State<ItemsUploadScreen> {
               ),
               SizedBox(height: 20),
             ],
-          );
-        }),
+          ),
+
+        // Button to add new variation
+        ElevatedButton(
+          onPressed: () {
+            setState(() {
+              variations.add({'name': '', 'price': ''}); // Add new variation
+            });
+          },
+          child: Text(
+            "Add Variations",
+            style: TextStyle(
+              color: AppColors().white,
+              fontSize: 12.sp,
+              fontFamily: "Poppins",
+            ),
+          ),
+          style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors().red,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.w))),
+        ),
+        SizedBox(height: 20),
+        // Dynamic flavor inputs
+        for (int i = 0; i < flavors.length; i++)
+          Column(
+            children: [
+              ListTile(
+                leading: Icon(
+                  Icons.fastfood,
+                  color: AppColors().red,
+                ),
+                title: Container(
+                  width: 250,
+                  child: TextFormField(
+                    style: TextStyle(color: AppColors().black1),
+                    onChanged: (value) {
+                      setState(() {
+                        flavors[i]['name'] = value; // Update flavor name
+                      });
+                    },
+                    decoration: InputDecoration(
+                      hintText: "Flavor",
+                      hintStyle: TextStyle(
+                        color: AppColors().black1,
+                        fontSize: 12.sp,
+                      ),
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+              ),
+
+              SizedBox(height: 20),
+            ],
+          ),
 
         // Button to add new flavor
         ElevatedButton(
           onPressed: () {
             setState(() {
-              flavors.add({'name': '', 'price': ''});
+              flavors.add({'name': ''}); // Add new flavor
             });
           },
           child: Text(
