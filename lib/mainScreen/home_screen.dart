@@ -18,6 +18,9 @@ import '../uploadScreen/menus_upload_screen.dart';
 import 'package:path/path.dart' as path;
 import 'dart:io';
 
+import 'Add_Products.dart';
+import 'History_Screen.dart';
+import 'Notification_screen.dart';
 import 'order_card.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -379,11 +382,20 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           SliverToBoxAdapter(
             child: Center(
-              child: Text("New Order"),
+              child: Text("New Order",
+              style: TextStyle(
+                color: AppColors().black,
+                fontSize: 12.sp,
+                fontFamily: "Poppins"
+              ),),
             ),
           ),
           StreamBuilder<QuerySnapshot>(
-            stream: FirebaseFirestore.instance.collection("orders").where("status", isEqualTo: "normal").orderBy("orderTime", descending: true).snapshots(),
+            stream: FirebaseFirestore.instance.collection("orders")
+                .where("status", isEqualTo: "normal")
+                .where("sellerUID", isEqualTo: sellersUID) // Add this condition
+                .orderBy("orderTime", descending: true)
+                .snapshots(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return SliverToBoxAdapter(
@@ -399,7 +411,10 @@ class _HomeScreenState extends State<HomeScreen> {
               // Extract orders data from snapshot
               List<DocumentSnapshot> orders = snapshot.data!.docs;
 
-              // Build your UI using the orders data
+              // Filter orders to only include those where sellerUID matches current user's ID
+              orders = orders.where((order) => order.get("sellerUID") == sellersUID).toList();
+
+              // Build your UI using the filtered orders data
               return SliverList(
                 delegate: SliverChildBuilderDelegate(
                       (context, index) {
@@ -443,6 +458,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
 
+
         ],
       ),
       bottomNavigationBar: Theme(
@@ -454,11 +470,23 @@ class _HomeScreenState extends State<HomeScreen> {
           onTap: (int index) {
             setState(() {
               _currentIndex = index;
-              if (index == 2) {
-                _navigateToAddProducts(context);
+              switch (index) {
+                case 0:
+                // Navigate to Home Screen
+                  break;
+                case 1:
+                  _navigateToHistory(context);
+                  break;
+                case 2:
+                  _navigateToAddProducts(context);
+                  break;
+                case 3:
+                  _navigateToNotification(context);
+                  break;
               }
             });
           },
+
           items: [
             BottomNavigationBarItem(
               icon: Container(
@@ -556,7 +584,25 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _navigateToAddProducts(BuildContext context) {}
+  void _navigateToHistory(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => HistoryScreen()), // Replace HistoryScreen with the actual screen you want to navigate to
+    );
+  }
+
+  void _navigateToNotification(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => NotificationScreen()), // Replace NotificationScreen with the actual screen you want to navigate to
+    );
+  } void _navigateToAddProducts(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => AddProducts()), // Replace NotificationScreen with the actual screen you want to navigate to
+    );
+  }
+
 }
 
 class HomeTab extends StatelessWidget {
