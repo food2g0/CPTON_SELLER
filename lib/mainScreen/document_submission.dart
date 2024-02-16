@@ -84,7 +84,7 @@ class _DocumentSubmissionState extends State<DocumentSubmission> {
 
     try {
       // Save the data to Firestore
-      await FirebaseFirestore.instance.collection("users").doc(uid).set(userData);
+      await FirebaseFirestore.instance.collection("sellersDocs").doc(uid).set(userData);
 
       // Save data locally if needed
       SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -123,13 +123,37 @@ class _DocumentSubmissionState extends State<DocumentSubmission> {
                 ),
               ),
             ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors().red,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.w)
+                ),
+                minimumSize: Size(210, 40),
+              ),
               onPressed: selectDriverLicenseFile,
-              child: Text("Select Driver License File"),
+              child: Text("Select Business Permit File",
+              style: TextStyle(
+                color: AppColors().white,
+                fontFamily: "Poppins",
+                fontSize: 12.sp
+              ),),
             ),
             SizedBox(height: 20.h),
             ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors().green,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.w)
+                ),
+                minimumSize: Size(210, 40),
+              ),
               onPressed: uploadDriverLicenseFile,
-              child: Text("Upload Driver License File"),
+              child: Text("Upload File",
+              style: TextStyle(
+                color: AppColors().white,
+                fontSize: 12.sp,
+                fontFamily: "Poppins"
+              ),),
             ),
             SizedBox(height: 20.h),
           ],
