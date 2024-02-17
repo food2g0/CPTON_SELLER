@@ -19,6 +19,7 @@ class ItemsService {
         'productDescription': item.productDescription,
         'productPrice': item.productPrice,
         'productQuantity': item.productQuantity,
+        'thumbnailUrl': item.thumbnailUrl, // Include thumbnailUrl field
       });
     } catch (e) {
       print('Error updating item data: $e');
