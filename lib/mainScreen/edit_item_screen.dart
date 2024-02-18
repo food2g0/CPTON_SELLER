@@ -176,6 +176,7 @@ class _EditItemScreenState extends State<EditItemScreen> {
 
       // Update the item data in the database
       await _itemsService.updateItemData(updatedItem);
+      await _itemsService.updateItemDataInItems(updatedItem);
 
       // Close the progress dialog
       Navigator.pop(context);
