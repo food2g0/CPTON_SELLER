@@ -23,9 +23,10 @@ class _MenusUploadScreenState extends State<MenusUploadScreen> {
   final ImagePicker _picker = ImagePicker();
 
   TextEditingController shortInfoController = TextEditingController();
-  String selectedOption = "Burger"; // Variable to hold the selected option
+  String selectedOption = "Burger";
   String uniqueIdName = DateTime.now().millisecondsSinceEpoch.toString();
-  bool uploading = false;
+  bool uploading = false; // Track upload status
+  double uploadProgress = 0; // Track upload progress
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +56,7 @@ class _MenusUploadScreenState extends State<MenusUploadScreen> {
                   style: ElevatedButton.styleFrom(
                     primary: AppColors().red,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.0), // Adjust the border radius as needed
+                      borderRadius: BorderRadius.circular(8.0),
                     ),
                   ),
                   child: Row(
@@ -78,9 +79,6 @@ class _MenusUploadScreenState extends State<MenusUploadScreen> {
                   ),
                 ),
               ),
-
-
-
               SizedBox(height: 16.h),
               if (imageXFile != null) ...[
                 Container(
@@ -124,28 +122,35 @@ class _MenusUploadScreenState extends State<MenusUploadScreen> {
                   ),
                 ),
                 SizedBox(height: 46.h),
-                Center(
+                uploading // Show circular progress indicator if uploading
+                    ? Center(
+                  child: CircularProgressIndicator(
+                    value: uploadProgress,
+                    color: AppColors().red,
+                  ),
+                )
+                    : Center(
                   child: GestureDetector(
-                    onTap: uploading ? null : uploadValidateForm,
+                    onTap: uploadValidateForm,
                     child: Container(
                       height: 50.h,
-                      width: 200.w, // Set the width of the container
+                      width: 200.w,
                       child: ElevatedButton(
-                        onPressed: uploading ? null : uploadValidateForm,
+                        onPressed: uploadValidateForm,
                         style: ElevatedButton.styleFrom(
-                          primary: AppColors().red, // Set the background color to red
+                          primary: AppColors().red,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8.0), // Optional: adjust the border radius as needed
+                            borderRadius: BorderRadius.circular(8.0),
                           ),
                         ),
                         child: Padding(
-                          padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20), // Optional: adjust padding as needed
+                          padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
                           child: Text(
                             "Add Menu",
-                            textAlign: TextAlign.center, // Center the text within the button
+                            textAlign: TextAlign.center,
                             style: TextStyle(
                               fontWeight: FontWeight.w500,
-                              color: AppColors().white, // Set the text color to black
+                              color: AppColors().white,
                               fontSize: 12.sp,
                               fontFamily: "Poppins",
                             ),
@@ -155,11 +160,6 @@ class _MenusUploadScreenState extends State<MenusUploadScreen> {
                     ),
                   ),
                 ),
-
-
-
-
-
               ],
             ],
           ),
@@ -193,7 +193,7 @@ class _MenusUploadScreenState extends State<MenusUploadScreen> {
                 child: Row(
                   children: [
                     Icon(Icons.camera_alt,
-                    color: AppColors().red,),
+                      color: AppColors().red,),
                     SizedBox(width: 8),
                     Text(
                       "Capture with Camera",
@@ -216,7 +216,7 @@ class _MenusUploadScreenState extends State<MenusUploadScreen> {
                 child: Row(
                   children: [
                     Icon(Icons.photo_library,
-                    color: AppColors().red,),
+                      color: AppColors().red,),
                     SizedBox(width: 8),
                     Text(
                       "Select From Gallery",
@@ -278,7 +278,7 @@ class _MenusUploadScreenState extends State<MenusUploadScreen> {
   uploadValidateForm() async {
     if (imageXFile != null && selectedOption.trim().isNotEmpty) {
       setState(() {
-        uploading = true;
+        uploading = true; // Set uploading to true when upload starts
       });
 
       bool optionExists = await checkOptionExists(selectedOption.trim());
@@ -293,7 +293,7 @@ class _MenusUploadScreenState extends State<MenusUploadScreen> {
         );
         clearMenusUploadForm();
         setState(() {
-          uploading = false;
+          uploading = false; // Set uploading to false when upload completes
         });
       } else {
         String downloadUrl = await uploadImage(File(imageXFile!.path));
@@ -351,6 +351,15 @@ class _MenusUploadScreenState extends State<MenusUploadScreen> {
 
     storageRef.UploadTask uploadTask = reference.child(uniqueIdName + ".png").putFile(mImageFile);
 
+    // Listen to the task snapshots to track the upload progress
+    uploadTask.snapshotEvents.listen((storageRef.TaskSnapshot snapshot) {
+      double progress = snapshot.bytesTransferred / snapshot.totalBytes;
+      setState(() {
+        uploadProgress = progress;
+      });
+    });
+
+    // Wait for the upload task to complete
     storageRef.TaskSnapshot taskSnapshot = await uploadTask.whenComplete(() {});
 
     String downloadURL = await taskSnapshot.ref.getDownloadURL();

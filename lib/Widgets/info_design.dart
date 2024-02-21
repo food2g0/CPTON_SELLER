@@ -19,32 +19,73 @@ class InfoDesignWidget extends StatefulWidget {
 class _InfoDesignWidgetState extends State<InfoDesignWidget> {
 
   void deleteMenu() async {
-    try {
-      // Get the current user's sellersUID
-      String? sellersUID = sharedPreferences!.getString("sellersUID");
+    // Show confirmation dialog
+    bool confirmDelete = await showDialog(
+      context: context!,
+      builder: (context) => AlertDialog(
+        title: Text("Confirm Deletion",
+        style: TextStyle(fontFamily: "Poppins",
+        fontSize: 20.sp,
+        color: AppColors().red),),
+        content: Text("Are you sure you want to delete this menu?",
+        style: TextStyle(
+          fontFamily: "Poppins"
+        ),),
+        actions: [
+          TextButton(
+            onPressed: () {
+              // Close the dialog and return false to indicate cancellation
+              Navigator.pop(context, false);
+            },
+            child: Text("Cancel", style: TextStyle(
+              color: AppColors().black,
+              fontFamily: "Poppins"
+            ),),
+          ),
+          TextButton(
+            onPressed: () {
+              // Close the dialog and return true to indicate confirmation
+              Navigator.pop(context, true);
+            },
+            child: Text("Delete",style: TextStyle(
+    color: AppColors().red,
+    fontFamily: "Poppins"
+    ),),
+          ),
+        ],
+      ),
+    );
 
-      if (sellersUID != null) {
-        // Delete the menu document from Firestore
-        await FirebaseFirestore.instance
-            .collection("sellers")
-            .doc(sellersUID)
-            .collection("menus")
-            .doc(widget.model!.menuID) // Use the current menu's ID
-            .delete();
+    // If user confirms deletion, proceed with deletion
+    if (confirmDelete == true) {
+      try {
+        // Get the current user's sellersUID
+        String? sellersUID = sharedPreferences!.getString("sellersUID");
 
-        // Optionally, you can add a success message or perform any other actions
+        if (sellersUID != null) {
+          // Delete the menu document from Firestore
+          await FirebaseFirestore.instance
+              .collection("sellers")
+              .doc(sellersUID)
+              .collection("menus")
+              .doc(widget.model!.menuID) // Use the current menu's ID
+              .delete();
+
+          // Optionally, you can add a success message or perform any other actions
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Menu deleted successfully")),
+          );
+        }
+      } catch (error) {
+        // Handle any errors that occur during deletion
+        print("Error deleting menu: $error");
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Menu deleted successfully")),
+          SnackBar(content: Text("Failed to delete menu")),
         );
       }
-    } catch (error) {
-      // Handle any errors that occur during deletion
-      print("Error deleting menu: $error");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to delete menu")),
-      );
     }
   }
+
 
 
   @override
