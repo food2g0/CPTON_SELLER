@@ -13,6 +13,7 @@ import '../Widgets/customers_drawer.dart';
 import '../colors.dart';
 import '../global/global.dart';
 import '../models/Sales.dart';
+import '../models/menus.dart';
 import '../uploadScreen/menus_upload_screen.dart';
 
 
@@ -21,7 +22,9 @@ import 'History_Screen.dart';
 import 'order_card.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+
+  final Menus? model;
+  const HomeScreen({Key? key, this.model}) : super(key: key);
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -163,10 +166,15 @@ class _HomeScreenState extends State<HomeScreen> {
       drawer: const CustomersDrawer(),
       appBar: AppBar(
         title: StreamBuilder<DocumentSnapshot>(
-          stream: FirebaseFirestore.instance.collection('sellers').doc(sellersUID).snapshots(),
+          stream: FirebaseFirestore.instance
+              .collection('sellers')
+              .doc(sellersUID)
+              .snapshots(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return Text("Welcome", style: TextStyle(color: AppColors().black1, fontSize: 12.sp));
+              return Text("Welcome",
+                  style:
+                  TextStyle(color: AppColors().black1, fontSize: 12.sp));
             }
             if (snapshot.hasError) {
               return Text('Error: ${snapshot.error}');
@@ -175,11 +183,17 @@ class _HomeScreenState extends State<HomeScreen> {
             return RichText(
               text: TextSpan(
                 text: 'Welcome, ',
-                style: TextStyle(color: AppColors().black, fontSize: 14.sp, fontFamily: "Poppins"),
+                style: TextStyle(
+                    color: AppColors().black,
+                    fontSize: 14.sp,
+                    fontFamily: "Poppins"),
                 children: [
                   TextSpan(
                     text: sellerName,
-                    style: TextStyle(color: AppColors().white, fontSize: 14.sp, fontFamily: "Poppins"),
+                    style: TextStyle(
+                        color: AppColors().white,
+                        fontSize: 14.sp,
+                        fontFamily: "Poppins"),
                   ),
                 ],
               ),
@@ -191,7 +205,10 @@ class _HomeScreenState extends State<HomeScreen> {
         automaticallyImplyLeading: true,
         actions: [
           StreamBuilder<DocumentSnapshot>(
-            stream: FirebaseFirestore.instance.collection('sellers').doc(sellersUID).snapshots(),
+            stream: FirebaseFirestore.instance
+                .collection('sellers')
+                .doc(sellersUID)
+                .snapshots(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return SizedBox(); // Return an empty widget while waiting for data
@@ -204,9 +221,12 @@ class _HomeScreenState extends State<HomeScreen> {
                 value: isOpen,
                 onChanged: (value) {
                   // Update seller's status to Firestore
-                  FirebaseFirestore.instance.collection('sellers').doc(sellersUID).update({'open': value ? 'open' : 'close'});
+                  FirebaseFirestore.instance
+                      .collection('sellers')
+                      .doc(sellersUID)
+                      .update({'open': value ? 'open' : 'close'});
                 },
-                activeColor: Colors.green, // Color when the switch is on
+                activeColor: AppColors().green, // Color when the switch is on
                 inactiveThumbColor: Colors.red, // Color when the switch is off
               );
             },
@@ -214,7 +234,32 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
 
-      body: CustomScrollView(
+      body: StreamBuilder<DocumentSnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('sellers')
+            .doc(sellersUID)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return CircularProgressIndicator();
+          }
+          if (snapshot.hasError) {
+            return Text('Error: ${snapshot.error}');
+          }
+          var isOpen = snapshot.data!.get('open') == 'open'; // Check if seller is open
+          if (!isOpen) {
+            // Seller is closed, display a message
+            return Center(
+              child: Text(
+                'Store is closed please turned it on',
+                style: TextStyle(fontSize: 12.sp,
+                fontFamily: "Poppins",
+                color: AppColors().black),
+              ),
+            );
+          }
+
+      return CustomScrollView(
         slivers: [
 
           SliverList(
@@ -271,7 +316,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 Text(
                                   'Transaction Summary',
                                   style: TextStyle(
-                                    fontSize: 12.sp,
+                                    fontSize: 10.sp,
                                     fontFamily: "Poppins",
                                     fontWeight: FontWeight.bold,
                                     color: AppColors().black,
@@ -290,12 +335,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                     height: Dimensions.height100,
                                     child: Padding(
                                       padding: EdgeInsets.all(5.h),
-                                      child: Row(
-                                        crossAxisAlignment: CrossAxisAlignment
-                                            .start,
-                                        mainAxisAlignment: MainAxisAlignment
-                                            .center,
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.center,
+                                        mainAxisAlignment: MainAxisAlignment.start,
                                         children: [
+                                          SizedBox(height: 3.h,),
                                           Text(
                                             'Products',
                                             style: TextStyle(
@@ -305,11 +349,56 @@ class _HomeScreenState extends State<HomeScreen> {
                                               color: AppColors().red,
                                             ),
                                           ),
+                                          SizedBox(height: 5),
+                                          StreamBuilder<QuerySnapshot>(
+                                            stream: FirebaseFirestore.instance
+                                                .collection("sellers")
+                                                .doc(sharedPreferences!.getString("sellersUID"))
+                                                .collection("menus")
+                                                .snapshots(),
+                                            builder: (context, snapshot) {
+                                              if (snapshot.connectionState == ConnectionState.waiting) {
+                                                return CircularProgressIndicator();
+                                              }
+                                              if (snapshot.hasError) {
+                                                return Text('Error: ${snapshot.error}');
+                                              }
+                                              List<String> menuIds = snapshot.data!.docs.map((doc) => doc.id).toList();
+                                              return FutureBuilder<int>(
+                                                future: _calculateTotalItems(menuIds),
+                                                builder: (context, itemCountSnapshot) {
+                                                  if (itemCountSnapshot.connectionState == ConnectionState.waiting) {
+                                                    return CircularProgressIndicator();
+                                                  }
+                                                  if (itemCountSnapshot.hasError) {
+                                                    return Text('Error: ${itemCountSnapshot.error}');
+                                                  }
+                                                  return
+                                                    SizedBox(
+                                                      height: 40,
+                                                      child: Text(
+                                                      '${itemCountSnapshot.data}',
+                                                      style: TextStyle(
+                                                        fontSize: 20.sp,
+                                                        fontFamily: "Poppins",
+                                                        fontWeight: FontWeight.bold,
+                                                        color: AppColors().black,
+                                                      ),
+                                                                                                        ),
+                                                    );
+
+                                                },
+                                              );
+                                            },
+                                          ),
                                         ],
                                       ),
                                     ),
                                   ),
                                 ),
+
+
+
                                 Card(
                                   elevation: 2,
                                   child: Container(
@@ -488,14 +577,14 @@ class _HomeScreenState extends State<HomeScreen> {
                     );
                   },
                   childCount: orders.length,
-                ),
+                )
               );
-            },
+              }
           )
-
-
-        ],
-      ),
+              ],
+              );
+              },
+              ),
       bottomNavigationBar: Theme(
         data: Theme.of(context).copyWith(
           canvasColor: AppColors().black,
@@ -675,4 +764,20 @@ class NewOrderTab extends StatelessWidget {
       child: Text('New Order Tab Content'),
     );
   }
+
 }
+Future<int> _calculateTotalItems(List<String> menuIds) async {
+  int totalItems = 0;
+  for (String menuId in menuIds) {
+    QuerySnapshot itemSnapshot = await FirebaseFirestore.instance
+        .collection("sellers")
+        .doc(sharedPreferences!.getString("sellersUID"))
+        .collection("menus")
+        .doc(menuId)
+        .collection("items")
+        .get();
+    totalItems += itemSnapshot.size;
+  }
+  return totalItems;
+}
+
