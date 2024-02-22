@@ -250,7 +250,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
 
-                activeColor: AppColors().green, // Color when the switch is on
+                activeColor: Colors.green, // Color when the switch is on
                 inactiveThumbColor: Colors.red, // Color when the switch is off
               );
             },
@@ -483,13 +483,13 @@ class _HomeScreenState extends State<HomeScreen> {
                               'View Products',
                               style: TextStyle(
                                 fontFamily: "Poppins",
-                                fontSize: 12.sp,
+                                fontSize: 10.sp,
                               ),
                             ),
                             style: ElevatedButton.styleFrom(
                               foregroundColor: AppColors().white,
                               backgroundColor: AppColors().red,
-                              fixedSize: Size(160.w, 50.h),
+                              fixedSize: Size(150.w, 45.h),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8.0.w),
                               ),
@@ -504,13 +504,13 @@ class _HomeScreenState extends State<HomeScreen> {
                               'Add Menu',
                               style: TextStyle(
                                 fontFamily: "Poppins",
-                                fontSize: 12.sp,
+                                fontSize: 10.sp,
                               ),
                             ),
                             style: ElevatedButton.styleFrom(
                               foregroundColor: AppColors().white,
                               backgroundColor: AppColors().red,
-                              fixedSize: Size(160.w, 50.h),
+                              fixedSize: Size(150.w, 45.h),
                               // Set width and height as needed
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8.0),

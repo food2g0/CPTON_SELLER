@@ -98,6 +98,10 @@ class _MenusUploadScreenState extends State<MenusUploadScreen> {
                   controller: shortInfoController,
                   decoration: InputDecoration(
                     hintText: "Menu Info (Optional)",
+                    hintStyle: TextStyle(
+                      fontFamily: "Poppins",
+                      fontSize: 10.sp
+                    ),
                     border: OutlineInputBorder(),
                   ),
                 ),
@@ -109,11 +113,18 @@ class _MenusUploadScreenState extends State<MenusUploadScreen> {
                       selectedOption = newValue!;
                     });
                   },
-                  items: ["Burger", "Fries", "Drinks","Milk tea", "Pizza", "Chicken", "Dessert" ]
+                  items: ["Coffee", "Fries", "Drinks","Milk tea", "Pizza", "Chicken", "Dessert","Burger" ]
                       .map<DropdownMenuItem<String>>((String option) {
                     return DropdownMenuItem<String>(
                       value: option,
-                      child: Text(option),
+                      child: Text(
+                        option,
+                        style: TextStyle(
+                          fontFamily: "Poppins", // Set the font family
+                          fontSize: 12.sp, // Set the font size
+                          color: AppColors().black, // Set the text color
+                        ),
+                      ),
                     );
                   }).toList(),
                   decoration: InputDecoration(
@@ -121,7 +132,8 @@ class _MenusUploadScreenState extends State<MenusUploadScreen> {
                     border: OutlineInputBorder(),
                   ),
                 ),
-                SizedBox(height: 46.h),
+
+                SizedBox(height: 40.h),
                 uploading // Show circular progress indicator if uploading
                     ? Center(
                   child: CircularProgressIndicator(

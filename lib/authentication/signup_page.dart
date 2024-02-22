@@ -1,7 +1,9 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cpton_food2go_sellers/colors.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:firebase_storage/firebase_storage.dart' as fStorage;
@@ -93,15 +95,17 @@ class _SignUpPageState extends State<SignUpPage> {
   }
 
 
-  Future<void> formValidation() async {
+  Future<bool> formValidation() async {
     if (imageXFile == null) {
       showDialog(
-          context: context,
-          builder: (c) {
-            return ErrorDialog(
-              message: "Please select an image.",
-            );
-          });
+        context: context,
+        builder: (c) {
+          return ErrorDialog(
+            message: "Please select an image.",
+          );
+        },
+      );
+      return false; // Validation failed
     } else {
       if (passwordController.text == confirmPasswordController.text) {
         if (confirmPasswordController.text.isNotEmpty &&
@@ -111,18 +115,18 @@ class _SignUpPageState extends State<SignUpPage> {
             locationController.text.isNotEmpty) {
           // Start uploading image
           showDialog(
-              context: context,
-              builder: (c) {
-                return LoadingDialog(
-                  message: "Registering Account",
-                );
-              });
+            context: context,
+            builder: (c) {
+              return LoadingDialog(
+                message: "Registering Account",
+              );
+            },
+          );
 
           String fileName = DateTime.now().millisecondsSinceEpoch.toString();
           fStorage.Reference reference =
           fStorage.FirebaseStorage.instance.ref().child("sellers").child(fileName);
-          fStorage.UploadTask uploadTask =
-          reference.putFile(File(imageXFile!.path));
+          fStorage.UploadTask uploadTask = reference.putFile(File(imageXFile!.path));
           fStorage.TaskSnapshot taskSnapshot = await uploadTask.whenComplete(() {});
           await taskSnapshot.ref.getDownloadURL().then((url) {
             sellerImageUrl = url;
@@ -130,26 +134,32 @@ class _SignUpPageState extends State<SignUpPage> {
             // Save info to firestore
             authenticateSellerAndSignUp();
           });
+          return true; // Validation successful
         } else {
           showDialog(
-              context: context,
-              builder: (c) {
-                return ErrorDialog(
-                  message: "Please write the complete required info for Registration.",
-                );
-              });
-        }
-      } else {
-        showDialog(
             context: context,
             builder: (c) {
               return ErrorDialog(
-                message: "Password do not match.",
+                message: "Please write the complete required info for Registration.",
               );
-            });
+            },
+          );
+          return false; // Validation failed
+        }
+      } else {
+        showDialog(
+          context: context,
+          builder: (c) {
+            return ErrorDialog(
+              message: "Password do not match.",
+            );
+          },
+        );
+        return false; // Validation failed
       }
     }
   }
+
 
 
 
@@ -261,7 +271,7 @@ class _SignUpPageState extends State<SignUpPage> {
     double w = MediaQuery.of(context).size.width;
     double h = MediaQuery.of(context).size.height;
     return Scaffold(
-      backgroundColor: Colors.grey,
+      backgroundColor: AppColors().white,
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -309,97 +319,183 @@ class _SignUpPageState extends State<SignUpPage> {
                           : null,
                     ),
                   ),
-                  const SizedBox(height: 20),
+                 SizedBox(height: 20.h),
+                  Text("Choose your store Profile",
+                  style: TextStyle(
+                    fontFamily: "Poppins",
+                    fontSize: 10.sp
+                  ),),
+                  SizedBox(height: 20.h),
                   Form(
                     key: _formKey,
                     child: Column(
                       children: [
-                        CustomTextField(
-                          controller: nameController,
-                          data: Icons.person,
-                          hintText: "Enter your Shop Name",
-                          isObsecure: false,
-                        ),
-                        const SizedBox(height: 20),
                         Padding(
                           padding: const EdgeInsets.all(8.0),
-                          child: DropdownButtonFormField<String>(
-                            value: selectedCategory,
-                            items: categoryOptions.map((String category) {
-                              return DropdownMenuItem<String>(
-                                value: category,
-                                child: Text(category),
-                              );
-                            }).toList(),
-                            onChanged: (String? selectedCategory) {
-                              setState(() {
-                                this.selectedCategory = selectedCategory ?? "Desert";
-                                categoryController.text = this.selectedCategory;
-                              });
-                            },
-                            decoration: InputDecoration(
-                              prefixIcon: Icon(Icons.category_outlined),
-                              hintText: "Select Shop Category",
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(10.0),
+                          child: CustomTextField(
+                            controller: nameController,
+                            data: Icons.person,
+                            hintText: "Enter your Shop Name",
+                            isObsecure: false,
+                            keyboardType: TextInputType.text,
+                            inputTextStyle: TextStyle(
+                                fontFamily: "Poppins",
+                                fontSize: 12.sp
+                            ),
+                          ),
+                        ),
+
+                        Padding(
+                          padding: const EdgeInsets.all(16.0),
+
+                          child: Theme(
+                            data: Theme.of(context).copyWith(
+                              // Set the text style for the dropdown menu items
+                              textTheme: Theme.of(context).textTheme.copyWith(
+                                subtitle1: TextStyle(
+                                  fontSize: 12.sp, // Adjust the font size
+                                  color: Colors.black, // Adjust the text color
+                                ),
                               ),
-                              focusedBorder: OutlineInputBorder(
-                                borderSide: BorderSide(color: Colors.red, width: 2.0),
-                                borderRadius: BorderRadius.circular(10.0),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderSide: BorderSide(color: Colors.black, width: 1.0),
-                                borderRadius: BorderRadius.circular(10.0),
+                            ),
+                            child: DropdownButtonFormField<String>(
+                              value: selectedCategory,
+                              items: categoryOptions.map((String category) {
+                                return DropdownMenuItem<String>(
+                                  value: category,
+                                  child: Text(
+                                    category,
+                                    style: TextStyle(
+                                      // Define your desired text style here
+                                      fontSize: 12,
+                                      fontFamily: "Poppins",// Adjust the font size
+                                      color: Colors.black, // Adjust the text color
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                              onChanged: (String? selectedCategory) {
+                                setState(() {
+                                  this.selectedCategory = selectedCategory ?? "Desert";
+                                  categoryController.text = this.selectedCategory;
+                                });
+                              },
+                              decoration: InputDecoration(
+                                prefixIcon: Icon(Icons.category_outlined),
+                                hintText: "Select Shop Category",
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8.0),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.red, width: 2.0),
+                                  borderRadius: BorderRadius.circular(8.0),
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.black, width: 1.0),
+                                  borderRadius: BorderRadius.circular(8.0),
+                                ),
                               ),
                             ),
                           ),
                         ),
-                        const SizedBox(height: 20),
-                        CustomTextField(
-                          controller: emailController,
-                          data: Icons.email,
-                          hintText: "Enter your Email",
-                          isObsecure: false,
+
+
+
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: CustomTextField(
+                            controller: emailController,
+                            data: Icons.email,
+                            hintText: "Enter your Email",
+                            isObsecure: false,
+                            keyboardType: TextInputType.text,
+                            inputTextStyle: TextStyle(
+                              fontFamily: "Poppins",
+                              fontSize: 12.sp,
+                            ),
+                          ),
                         ),
-                        const SizedBox(height: 20),
-                        CustomTextField(
-                          controller: phoneController,
-                          data: Icons.phone_android,
-                          hintText: "Enter your Phone Number",
-                          isObsecure: false,
+
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: CustomTextField(
+                            controller: phoneController,
+                            hintText: "Enter your Phone Number",
+                            hintStyle: TextStyle(fontFamily: "Poppins", fontSize: 10.sp),
+                            data: Icons.phone,
+                            keyboardType: TextInputType.phone,
+                            maxLength: 11,
+                            isObsecure: false,
+                            inputTextStyle: TextStyle(
+                              fontFamily: "Poppins",
+                              fontSize: 12.sp,
+                            ),
+                          ),
                         ),
-                        const SizedBox(height: 20),
-                        CustomTextField(
-                          controller: passwordController,
-                          data: Icons.password,
-                          hintText: "Enter your Password",
-                          isObsecure: true,
+
+
+
+
+
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: CustomTextField(
+                            controller: passwordController,
+                            data: Icons.password,
+                            hintText: "Enter your Password",
+                            keyboardType: TextInputType.text,
+                            isObsecure: true,
+                            inputTextStyle: TextStyle(
+                                fontFamily: "Poppins",
+                                fontSize: 12.sp
+                            ),
+                          ),
                         ),
-                        const SizedBox(height: 20),
-                        CustomTextField(
-                          controller: confirmPasswordController,
-                          data: Icons.password_rounded,
-                          hintText: "Confirm your Password",
-                          isObsecure: true,
+
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: CustomTextField(
+                            controller: confirmPasswordController,
+                            data: Icons.password_rounded,
+                            hintText: "Confirm your Password",
+                            keyboardType: TextInputType.text,
+                            isObsecure: true,
+                            inputTextStyle: TextStyle(
+                                fontFamily: "Poppins",
+                                fontSize: 12.sp
+                            ),
+                          ),
                         ),
-                        const SizedBox(height: 20),
-                        CustomTextField(
-                          controller: locationController,
-                          data: Icons.location_city,
-                          hintText: "Enter your Address",
-                          isObsecure: false,
-                          enabled: false,
+
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: CustomTextField(
+                            controller: locationController,
+                            data: Icons.location_city,
+                            hintText: "Enter your Address",
+                            isObsecure: false,
+                            enabled: false,
+                            inputTextStyle: TextStyle(
+                                fontFamily: "Poppins",
+                                fontSize: 12.sp
+                            ),
+                          ),
                         ),
-                        const SizedBox(height: 20),
+                        SizedBox(height: 20.h,),
+
                         Container(
-                          width: 400,
-                          height: 40,
+                          width: 400.w,
+                          height: 50.h,
                           alignment: Alignment.center,
                           child: ElevatedButton.icon(
-                            label: const Text(
+                            label: Text(
                               "Get my current location",
-                              style: TextStyle(color: Colors.white),
+                              style: TextStyle(color: AppColors().white,
+                              fontSize: 10.sp,
+                              fontFamily: "Poppins"),
+
                             ),
+
                             icon: const Icon(
                               Icons.location_on,
                               color: Colors.red,
@@ -411,9 +507,9 @@ class _SignUpPageState extends State<SignUpPage> {
 
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.black45,
+                              backgroundColor: AppColors().black,
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
+                                borderRadius: BorderRadius.circular(8.w),
                               ),
                             ),
                           ),
@@ -423,38 +519,44 @@ class _SignUpPageState extends State<SignUpPage> {
                   ),
                   SizedBox(height: w * 0.08),
                   SizedBox(
-                    width: 150, // Set the desired width
-                    child: ElevatedButton(
-                      onPressed: () {
-
-                        formValidation();
+                    width: 170.w, // Set the desired width
+                    child:ElevatedButton(
+                      onPressed: () async {
+                        // Perform form validation
+                        bool isValid = await formValidation();
+                        if (isValid) {
+                          // Navigate only if the validation is successful
                           Navigator.push(context, MaterialPageRoute(builder: (c) => DocumentSubmission()));
-
-
+                        }
                       },
-
-
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.black45,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.w),
+                        ),
+                        backgroundColor: AppColors().red,
                         padding: const EdgeInsets.symmetric(vertical: 10),
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            "Next",
+                            "Proceed",
                             style: TextStyle(
                               color: Colors.white,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: FontWeight.w500,
+                              fontFamily: "Poppins",
+                              fontSize: 12.sp,
                             ),
                           ),
+                          SizedBox(width: 10.w),
                           Icon(
                             Icons.arrow_forward,
                             color: Colors.white,
                           ),
                         ],
                       ),
-                    ),
+                    )
+
                   ),
                   SizedBox(height: w * 0.08),
                 ],

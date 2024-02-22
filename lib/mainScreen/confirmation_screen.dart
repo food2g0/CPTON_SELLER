@@ -29,7 +29,7 @@ class _ConfirmationScreenState extends State<ConfirmationScreen> {
       body: Center(
         child: Text("Were validating your account please wait...",
           style: TextStyle(
-              fontSize: 12.sp,
+              fontSize: 10.sp,
               fontFamily: "Poppins",
               color: AppColors().black1
           ),),

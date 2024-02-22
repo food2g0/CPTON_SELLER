@@ -160,8 +160,10 @@ class _AuthScreenState extends State<AuthScreen> {
                     CustomTextField(
                       data: Icons.email,
                       hintText: "Enter your Email",
+                      keyboardType: TextInputType.text,
                       hintStyle: TextStyle(
                         color: AppColors().black1,
+
                         fontFamily: "Poppins",
                         fontSize: 12.sp,
                         fontWeight: FontWeight.w500,
@@ -174,8 +176,10 @@ class _AuthScreenState extends State<AuthScreen> {
                       isObsecure: false,
                       controller: emailController,
                     ),
+                    SizedBox(height: 15.h,),
                     CustomTextField(
                       data: Icons.password,
+                      keyboardType: TextInputType.text,
                       hintText: "Enter your Password",
                       hintStyle: TextStyle(
                         color: AppColors().black1,
