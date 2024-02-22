@@ -5,6 +5,7 @@ import 'package:cpton_food2go_sellers/mainScreen/edit_item_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../global/global.dart';
+import '../mainScreen/item_details_screen.dart';
 import '../models/items.dart';
 
 class ItemsDesignWidget extends StatefulWidget {
@@ -64,7 +65,7 @@ class _ItemsDesignWidgetState extends State<ItemsDesignWidget> {
 
     return InkWell(
       onTap: () {
-        //Navigator.push(context, MaterialPageRoute(builder: (c)=> ItemsScreen(model: widget.model)));
+        Navigator.push(context, MaterialPageRoute(builder: (c)=> ItemDetailsScreen(model: widget.model)));
       },
       child: Padding(
         padding: const EdgeInsets.all(10.0),
