@@ -30,55 +30,9 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
   String selectedFlavorsName = '';
 
 
-  void updateItemStatus(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text("Confirm Status Update",
-            style: TextStyle(
-                color: AppColors().red,
-                fontFamily: "Poppins",
-                fontSize: 12.sp
-            ),),
-          content: Text("Are you sure you want to update the status to 'out of stock'?",
-          style: TextStyle(
-            color: AppColors().black,
-            fontFamily: "Poppins",
-            fontSize: 10.sp
-          ),),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Close the dialog
-              },
-              child: Text("Cancel",
-              style: TextStyle(
-                color: AppColors().black,
-                fontFamily: "Poppins"
-              ),),
-            ),
-            TextButton(
-              onPressed: () {
-                // Close the dialog and update the status
-                Navigator.of(context).pop();
-                // Call the function to update the status in both collections
-                performStatusUpdate(context);
-              },
-              child: Text("Update",style:
-                TextStyle(
-                  color: AppColors().red,
-                  fontFamily: "Poppins"
-                ),),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void performStatusUpdate(BuildContext context) {
+  void updateItemStatus(BuildContext context, bool isOutOfStock) {
     String productsID = widget.model.productsID; // Get the product ID
+    String newStatus = isOutOfStock ? "out of stock" : "available";
 
     // Update status in the menu's 'items' collection
     final menuItemsRef = FirebaseFirestore.instance
@@ -88,10 +42,10 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
         .doc(widget.model!.menuID)
         .collection("items");
 
-    menuItemsRef.doc(productsID).update({"status": "out of stock"})
+    menuItemsRef.doc(productsID).update({"status": newStatus})
         .then((_) {
       // Handle success
-      print('Item status updated to out of stock in menu\'s items collection');
+      print('Item status updated to $newStatus in menu\'s items collection');
       showToast("Item status updated successfully");
     }).catchError((error) {
       // Handle error
@@ -101,16 +55,61 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
     // Update status in the 'items' collection
     final itemsRef = FirebaseFirestore.instance.collection("items");
 
-    itemsRef.doc(productsID).update({"status": "out of stock"})
+    itemsRef.doc(productsID).update({"status": newStatus})
         .then((_) {
       // Handle success
-      print('Item status updated to out of stock in items collection');
+      print('Item status updated to $newStatus in items collection');
+      showToast("Item status updated successfully");
+    }).catchError((error) {
+      // Handle error
+      print('Error updating item status in items collection: $error');
+    });
+
+    setState(() {
+      // Update the widget model
+      widget.model.status = newStatus;
+    });
+  }
+
+
+
+
+  void performStatusUpdate(BuildContext context, bool isOutOfStock) {
+    String productsID = widget.model.productsID; // Get the product ID
+
+    // Define the status based on the current status
+    String status = isOutOfStock ? 'available' : 'out of stock';
+
+    // Update status in the menu's 'items' collection
+    final menuItemsRef = FirebaseFirestore.instance
+        .collection("sellers")
+        .doc(sharedPreferences!.getString("sellersUID"))
+        .collection("menus")
+        .doc(widget.model!.menuID)
+        .collection("items");
+
+    menuItemsRef.doc(productsID).update({"status": status}).then((_) {
+      // Handle success
+      print('Item status updated to $status in menu\'s items collection');
+      showToast("Item status updated successfully");
+    }).catchError((error) {
+      // Handle error
+      print('Error updating item status in menu\'s items collection: $error');
+    });
+
+    // Update status in the 'items' collection
+    final itemsRef = FirebaseFirestore.instance.collection("items");
+
+    itemsRef.doc(productsID).update({"status": status}).then((_) {
+      // Handle success
+      print('Item status updated to $status in items collection');
       showToast("Item status updated successfully");
     }).catchError((error) {
       // Handle error
       print('Error updating item status in items collection: $error');
     });
   }
+
 
   void showToast(String message) {
     Fluttertoast.showToast(
@@ -424,28 +423,30 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
           children: [
             ElevatedButton(
               onPressed: () {
-                // Add your logic to update the status of the item here
-                updateItemStatus(context);
+                bool isOutOfStock = widget.model.status == 'out of stock'; // Check if the current status is out of stock
+                // Call the function to update the status
+                updateItemStatus(context, !isOutOfStock);
               },
               child: Text(
-                'Out of Stock?',
+                widget.model.status == 'out of stock' ? 'Restock' : 'Out of Stock',
                 style: TextStyle(
-                  fontFamily: "Poppins",
-                  fontSize: 12.sp,
-                  fontWeight: FontWeight.w500,
-                  color: AppColors().white
+                    fontFamily: "Poppins",
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors().white
                 ),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors().red,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10)
-                )
+                  backgroundColor: widget.model.status == 'out of stock' ? Colors.green : AppColors().red,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)
+                  )
               ),
             ),
           ],
         ),
       ),
+
 
     );
 

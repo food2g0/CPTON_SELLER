@@ -12,7 +12,6 @@ import '../Widgets/error_dialog.dart';
 import '../Widgets/loading_dialog.dart';
 import '../global/global.dart';
 import '../mainScreen/document_submission.dart';
-import '../mainScreen/home_screen.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({Key? key}) : super(key: key);
@@ -48,6 +47,7 @@ class _SignUpPageState extends State<SignUpPage> {
     "Coffee Shop",
     "Fast Food",
     "Burger Shop",
+    "Dessert Shop",
     // Add more categories as needed
   ];
   // Default category
@@ -239,6 +239,7 @@ class _SignUpPageState extends State<SignUpPage> {
       "sellersCategory": categoryController.text, // Use categoryController.text
       "status": "disapproved",
       "earnings": 0.0,
+      "open": "close",
       "lat": position!.latitude,
       "lng": position!.longitude,
     });
