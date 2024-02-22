@@ -83,24 +83,50 @@ class _EditItemScreenState extends State<EditItemScreen> {
               ),
             ),
             // Other input fields for title, description, price, and quantity
+            // Other input fields for title, description, price, and quantity
             TextFormField(
               controller: titleController,
               decoration: InputDecoration(labelText: 'Title'),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter a title';
+                }
+                return null;
+              },
             ),
             TextFormField(
               controller: descriptionController,
               decoration: InputDecoration(labelText: 'Description'),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter a description';
+                }
+                return null;
+              },
             ),
             TextFormField(
               controller: priceController,
               keyboardType: TextInputType.number,
               decoration: InputDecoration(labelText: 'Price'),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter a price';
+                }
+                return null;
+              },
             ),
             TextFormField(
               controller: quantityController,
               keyboardType: TextInputType.number,
               decoration: InputDecoration(labelText: 'Quantity'),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Please enter a quantity';
+                }
+                return null;
+              },
             ),
+
             // Save changes button
             SizedBox( height: 20.h,),
             ElevatedButton(
