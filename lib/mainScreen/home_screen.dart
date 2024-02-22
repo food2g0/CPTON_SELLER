@@ -219,18 +219,45 @@ class _HomeScreenState extends State<HomeScreen> {
               var isOpen = snapshot.data!.get('open') == 'open'; // Check if seller is open
               return Switch(
                 value: isOpen,
-                onChanged: (value) {
+                onChanged: (value) async {
                   // Update seller's status to Firestore
-                  FirebaseFirestore.instance
-                      .collection('sellers')
-                      .doc(sellersUID)
-                      .update({'open': value ? 'open' : 'close'});
+                  try {
+                    await FirebaseFirestore.instance
+                        .collection('sellers')
+                        .doc(sellersUID)
+                        .update({'open': value ? 'open' : 'close'});
+
+                    // Update items status based on store status
+                    final itemsQuery = await FirebaseFirestore.instance
+                        .collection('items')
+                        .where('sellersUID', isEqualTo: sellersUID)
+                        .get();
+
+                    // Iterate through the items and update their status
+                    final List<Future<void>> updateTasks = [];
+                    itemsQuery.docs.forEach((doc) {
+                      updateTasks.add(doc.reference.update({'status': value ? 'available' : 'not available'}));
+                    });
+
+                    // Wait for all updates to complete
+                    await Future.wait(updateTasks);
+                  } catch (e) {
+                    print('Error updating items status: $e');
+                  }
                 },
+
+
+
+
+
                 activeColor: AppColors().green, // Color when the switch is on
                 inactiveThumbColor: Colors.red, // Color when the switch is off
               );
             },
           ),
+
+
+
         ],
       ),
 
