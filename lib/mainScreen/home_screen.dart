@@ -4,23 +4,20 @@ import 'package:cpton_food2go_sellers/Widgets/Dimensions.dart';
 import 'package:cpton_food2go_sellers/mainScreen/chat_screen.dart';
 import 'package:cpton_food2go_sellers/mainScreen/products_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart' as storageRef;
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import '../Widgets/customers_drawer.dart';
-import '../Widgets/error_dialog.dart';
+
 import '../colors.dart';
 import '../global/global.dart';
 import '../models/Sales.dart';
 import '../uploadScreen/menus_upload_screen.dart';
-import 'package:path/path.dart' as path;
-import 'dart:io';
+
 
 import 'Add_Products.dart';
 import 'History_Screen.dart';
-import 'Notification_screen.dart';
 import 'order_card.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -36,7 +33,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   TextEditingController shortInfoController = TextEditingController();
   String selectedOption = "Burger"; // Variable to hold the selected option
-  String uniqueIdName = DateTime.now().millisecondsSinceEpoch.toString();
+  String uniqueIdName = DateTime
+      .now()
+      .millisecondsSinceEpoch
+      .toString();
   bool uploading = false;
 
   clearMenusUploadForm() {
@@ -62,7 +62,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> getOrderDetails() async {
     try {
       // Fetch all order documents from the "orders" collection
-      QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection("orders").get();
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance.collection(
+          "orders").get();
 
       // Check if there are any documents returned
       if (querySnapshot.docs.isNotEmpty) {
@@ -83,17 +84,21 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  Future<void> confirmedParcelShipment(String orderID, String customerUID) async {
+  Future<void> confirmedParcelShipment(String orderID,
+      String customerUID) async {
     try {
       // Get a reference to the order document using the provided orderID
-      DocumentReference orderRef = FirebaseFirestore.instance.collection("orders").doc(orderID);
+      DocumentReference orderRef = FirebaseFirestore.instance.collection(
+          "orders").doc(orderID);
 
       // Update the status of the order to "accepted"
       await orderRef.update({
         "status": "accepted",
       });
 
-      DocumentReference customerOrderRef = FirebaseFirestore.instance.collection("users").doc(customerUID).collection("orders").doc(orderID);
+      DocumentReference customerOrderRef = FirebaseFirestore.instance
+          .collection("users").doc(customerUID).collection("orders").doc(
+          orderID);
 
       await customerOrderRef.update({
         "status": "accepted",
@@ -106,7 +111,8 @@ class _HomeScreenState extends State<HomeScreen> {
       String currentStatus = orderSnapshot["status"];
       String updatedRiderUID = orderSnapshot["riderUID"];
 
-      if (currentStatus == "accepted" && updatedRiderUID != sharedPreferences!.getString("uid")) {
+      if (currentStatus == "accepted" &&
+          updatedRiderUID != sharedPreferences!.getString("uid")) {
         // Parcel has already been accepted by another rider
         Fluttertoast.showToast(
           msg: "Parcel has already been accepted by another rider",
@@ -141,7 +147,8 @@ class _HomeScreenState extends State<HomeScreen> {
       charts.Series(
         domainFn: (Sales sales, _) => sales.saleYear.toString(),
         measureFn: (Sales sales, _) => sales.saleVal,
-        colorFn: (Sales sales, _) => charts.ColorUtil.fromDartColor(Color(int.parse(sales.colorVal))),
+        colorFn: (Sales sales, _) =>
+            charts.ColorUtil.fromDartColor(Color(int.parse(sales.colorVal))),
         id: 'Sales',
         data: myData,
         labelAccessorFn: (Sales row, _) => "${row.saleYear}",
@@ -183,18 +190,30 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: AppColors().red,
         automaticallyImplyLeading: true,
         actions: [
-          IconButton(
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => ChatScreen()));
+          StreamBuilder<DocumentSnapshot>(
+            stream: FirebaseFirestore.instance.collection('sellers').doc(sellersUID).snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return SizedBox(); // Return an empty widget while waiting for data
+              }
+              if (snapshot.hasError) {
+                return Text('Error: ${snapshot.error}');
+              }
+              var isOpen = snapshot.data!.get('open') == 'open'; // Check if seller is open
+              return Switch(
+                value: isOpen,
+                onChanged: (value) {
+                  // Update seller's status to Firestore
+                  FirebaseFirestore.instance.collection('sellers').doc(sellersUID).update({'open': value ? 'open' : 'close'});
+                },
+                activeColor: Colors.green, // Color when the switch is on
+                inactiveThumbColor: Colors.red, // Color when the switch is off
+              );
             },
-            icon: Container(
-              width: 26,
-              height: 26,
-              child: Image.asset('images/icons/bubble-chat.png', color: AppColors().black),
-            ),
-          )
+          ),
         ],
       ),
+
       body: CustomScrollView(
         slivers: [
 
@@ -202,7 +221,8 @@ class _HomeScreenState extends State<HomeScreen> {
             delegate: SliverChildListDelegate(
               [
                 StreamBuilder<QuerySnapshot>(
-                  stream: FirebaseFirestore.instance.collection('sellers').doc(sellersUID).collection("sales").snapshots(),
+                  stream: FirebaseFirestore.instance.collection('sellers').doc(
+                      sellersUID).collection("sales").snapshots(),
                   builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return LinearProgressIndicator();
@@ -211,7 +231,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     } else if (!snapshot.hasData || snapshot.data == null) {
                       return Text('No data available');
                     } else {
-                      List<Sales> sales = snapshot.data!.docs.map((documentSnapshot) => Sales.fromMap(documentSnapshot.data() as Map<String, dynamic>)).toList();
+                      List<Sales> sales = snapshot.data!.docs.map((
+                          documentSnapshot) =>
+                          Sales.fromMap(
+                              documentSnapshot.data() as Map<String, dynamic>))
+                          .toList();
                       print(sales);
                       return _buildChart(context, sales);
                     }
@@ -267,8 +291,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                     child: Padding(
                                       padding: EdgeInsets.all(5.h),
                                       child: Row(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        crossAxisAlignment: CrossAxisAlignment
+                                            .start,
+                                        mainAxisAlignment: MainAxisAlignment
+                                            .center,
                                         children: [
                                           Text(
                                             'Products',
@@ -292,8 +318,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                     child: Padding(
                                       padding: EdgeInsets.all(5.w),
                                       child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        mainAxisAlignment: MainAxisAlignment
+                                            .center,
+                                        crossAxisAlignment: CrossAxisAlignment
+                                            .start,
                                         children: [
                                           Text(
                                             'Total Order',
@@ -353,8 +381,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           ElevatedButton(
                             onPressed: () {
-                              Navigator.push(context, MaterialPageRoute(builder: (c) => MenusUploadScreen()));
-
+                              Navigator.push(context, MaterialPageRoute(
+                                  builder: (c) => MenusUploadScreen()));
                             },
                             child: Text(
                               'Add Menu',
@@ -366,7 +394,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             style: ElevatedButton.styleFrom(
                               foregroundColor: AppColors().white,
                               backgroundColor: AppColors().red,
-                              fixedSize: Size(160.w, 50.h), // Set width and height as needed
+                              fixedSize: Size(160.w, 50.h),
+                              // Set width and height as needed
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8.0),
                               ),
@@ -383,11 +412,11 @@ class _HomeScreenState extends State<HomeScreen> {
           SliverToBoxAdapter(
             child: Center(
               child: Text("New Order",
-              style: TextStyle(
-                color: AppColors().black,
-                fontSize: 12.sp,
-                fontFamily: "Poppins"
-              ),),
+                style: TextStyle(
+                    color: AppColors().black,
+                    fontSize: 12.sp,
+                    fontFamily: "Poppins"
+                ),),
             ),
           ),
           StreamBuilder<QuerySnapshot>(
@@ -412,7 +441,9 @@ class _HomeScreenState extends State<HomeScreen> {
               List<DocumentSnapshot> orders = snapshot.data!.docs;
 
               // Filter orders to only include those where sellerUID matches current user's ID
-              orders = orders.where((order) => order.get("sellerUID") == sellersUID).toList();
+              orders =
+                  orders.where((order) => order.get("sellerUID") == sellersUID)
+                      .toList();
 
               // Build your UI using the filtered orders data
               return SliverList(
@@ -423,7 +454,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     dynamic productsData = orders[index].get("products");
                     List<Map<String, dynamic>> productList = [];
                     if (productsData != null && productsData is List) {
-                      productList = List<Map<String, dynamic>>.from(productsData);
+                      productList =
+                      List<Map<String, dynamic>>.from(productsData);
                     }
 
                     print("Order ID: $orderID, Product List: $productList");
@@ -438,12 +470,17 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         OrderCard(
                           data1: productList,
-                          itemCount: 1, // Only one product
-                          data: [firstProduct], // Pass the first product as a list
+                          itemCount: 1,
+                          // Only one product
+                          data: [firstProduct],
+                          // Pass the first product as a list
                           orderID: orderID,
-                          sellerName: "", // Pass the seller's name
+                          sellerName: "",
+                          // Pass the seller's name
                           paymentDetails: orders[index].get("paymentDetails"),
-                          totalAmount: orders[index].get("totalAmount").toString(),
+                          totalAmount: orders[index]
+                              .get("totalAmount")
+                              .toString(),
                           cartItems: productList, // Pass the full products list if needed
                         ),
                         SizedBox(height: 10), // Adjust the height as needed
@@ -455,8 +492,6 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             },
           )
-
-
 
 
         ],
@@ -492,7 +527,8 @@ class _HomeScreenState extends State<HomeScreen> {
               icon: Container(
                 width: 20.w,
                 height: 20.h,
-                child: Image.asset('images/icons/home.png', color: Colors.white),
+                child: Image.asset(
+                    'images/icons/home.png', color: Colors.white),
               ),
               label: 'Home',
             ),
@@ -500,7 +536,8 @@ class _HomeScreenState extends State<HomeScreen> {
               icon: Container(
                 width: 20.w,
                 height: 20.h,
-                child: Image.asset('images/icons/history.png', color: Colors.white),
+                child: Image.asset(
+                    'images/icons/history.png', color: Colors.white),
               ),
               label: 'History',
             ),
@@ -508,7 +545,8 @@ class _HomeScreenState extends State<HomeScreen> {
               icon: Container(
                 width: 20.w,
                 height: 20.h,
-                child: Image.asset('images/icons/add-to-cart.png', color: Colors.white),
+                child: Image.asset(
+                    'images/icons/add-to-cart.png', color: Colors.white),
               ),
               label: 'Add Products',
             ),
@@ -516,13 +554,16 @@ class _HomeScreenState extends State<HomeScreen> {
               icon: Container(
                 width: 20.w,
                 height: 20.h,
-                child: Image.asset('images/icons/notification.png', color: Colors.white),
+                child: Image.asset(
+
+                    'images/icons/bubble-chat.png', color: Colors.white),
               ),
               label: 'Notification',
             ),
           ],
           selectedItemColor: Colors.white,
-          unselectedItemColor: Colors.grey, // Change as needed
+          unselectedItemColor: Colors.grey,
+          // Change as needed
           selectedLabelStyle: TextStyle(
             fontFamily: 'Poppins', // Change the font family as needed
             fontSize: 10.sp, // Change the font size as needed
@@ -568,8 +609,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     primaryMeasureAxis: charts.NumericAxisSpec(
                       renderSpec: charts.GridlineRendererSpec(
                         labelStyle: charts.TextStyleSpec(
-                          fontSize: 6, // Adjust the font size as needed
-                          color: charts.MaterialPalette.black, // Adjust the font color as needed
+                          fontSize: 6,
+                          // Adjust the font size as needed
+                          color: charts.MaterialPalette.black,
+                          // Adjust the font color as needed
                           fontFamily: 'Poppins', // Change the font family to your desired font
                         ),
                       ),
@@ -587,23 +630,25 @@ class _HomeScreenState extends State<HomeScreen> {
   void _navigateToHistory(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => HistoryScreen()), // Replace HistoryScreen with the actual screen you want to navigate to
+      MaterialPageRoute(builder: (context) =>
+          HistoryScreen()), // Replace HistoryScreen with the actual screen you want to navigate to
     );
   }
 
   void _navigateToNotification(BuildContext context) {
     Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => NotificationScreen()), // Replace NotificationScreen with the actual screen you want to navigate to
-    );
-  } void _navigateToAddProducts(BuildContext context) {
+        context, MaterialPageRoute(builder: (context) => ChatScreen()));
+  }
+
+
+      } void _navigateToAddProducts(BuildContext context) {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => AddProducts()), // Replace NotificationScreen with the actual screen you want to navigate to
     );
   }
 
-}
+
 
 class HomeTab extends StatelessWidget {
   @override
