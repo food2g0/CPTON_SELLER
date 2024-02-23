@@ -51,6 +51,7 @@ dependencies:
   fluttertoast: ^8.2.4
   smooth_star_rating_null_safety: ^1.0.4+2
   flutter_screenutil: ^5.9.0
+  provider: ^6.1.1
 
 dev_dependencies:
   flutter_test:
