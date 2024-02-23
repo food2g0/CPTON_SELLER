@@ -63,45 +63,19 @@ class _ChatScreenState extends State<ChatScreen> {
         )
             : CircleAvatar(); // Provide a fallback avatar or leave it blank
 
-        // Fetch the chat room ID
-        final chatRoomId = _getChatRoomId(data['customersUID']);
-
-        // Fetch the status from the chat room document
-        return FutureBuilder<DocumentSnapshot>(
-          future: FirebaseFirestore.instance.collection('chat_rooms').doc(chatRoomId).get(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return ListTile(
-                leading: imageWidget,
-                title: Text(data['customersName'] ?? 'Customer'),
-                subtitle: Text('Loading status...'),
-              );
-            } else if (snapshot.hasError) {
-              return ListTile(
-                leading: imageWidget,
-                title: Text(data['customersName'] ?? 'Customer'),
-                subtitle: Text('Error loading status'),
-              );
-            } else {
-              final status = snapshot.data!['status'] as String?;
-              final statusText = status == 'not seen' ? 'New message' : 'seen';
-              return ListTile(
-                leading: imageWidget,
-                title: Text(data['customersName'] ?? 'Customer'),
-                subtitle: Text(statusText),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (c) => ChatPage(
-                        receiverUserEmail: data['customersEmail'],
-                        receiverUserID: customersUID,
-                      ),
-                    ),
-                  );
-                },
-              );
-            }
+        return ListTile(
+          leading: imageWidget,
+          title: Text(data['customersName'] ?? 'Customer'),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (c) => ChatPage(
+                  receiverUserEmail: data['customersEmail'],
+                  receiverUserID: customersUID,
+                ),
+              ),
+            );
           },
         );
       } else {
@@ -111,6 +85,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
     return Container();
   }
+
 
   String _getChatRoomId(String otherUserId) {
     final userId = _auth.currentUser!.uid;

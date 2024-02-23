@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cpton_food2go_sellers/Widgets/Dimensions.dart';
 import 'package:cpton_food2go_sellers/mainScreen/chat_screen.dart';
 import 'package:cpton_food2go_sellers/mainScreen/products_screen.dart';
+import 'package:cpton_food2go_sellers/uploadScreen/items_upload_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -760,7 +761,7 @@ class _HomeScreenState extends State<HomeScreen> {
       } void _navigateToAddProducts(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => AddProducts()), // Replace NotificationScreen with the actual screen you want to navigate to
+      MaterialPageRoute(builder: (context) => MenusUploadScreen()), // Replace NotificationScreen with the actual screen you want to navigate to
     );
   }
 

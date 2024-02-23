@@ -50,6 +50,7 @@ class _MenusUploadScreenState extends State<MenusUploadScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              SizedBox(height: 200.h,),
               Center(
                 child: ElevatedButton(
                   onPressed: () {
@@ -77,9 +78,21 @@ class _MenusUploadScreenState extends State<MenusUploadScreen> {
                           fontFamily: "Poppins",
                         ),
                       ),
+
+
                     ],
+
                   ),
                 ),
+              ),
+              SizedBox(height: 60.h,),
+              Center(
+                  child: Text("Make sure image is in PNG file",
+                  style:
+                    TextStyle(
+                      fontFamily: "Poppins",
+                      fontSize: 14.sp
+                    ),)
               ),
               SizedBox(height: 16.h),
               if (imageXFile != null) ...[

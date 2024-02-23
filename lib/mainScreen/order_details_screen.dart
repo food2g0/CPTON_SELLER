@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cpton_food2go_sellers/mainScreen/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -308,9 +309,8 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                 SizedBox(height: 100.h,),
                 Center(
                   child: ElevatedButton(onPressed: (){
-
                     confirmedParcelShipment(context);
-
+                    Navigator.push(context, MaterialPageRoute(builder: (c)=>HomeScreen()));
                   },
                       child: Text("Ready to pick up",
                       style: TextStyle(

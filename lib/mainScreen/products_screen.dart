@@ -27,14 +27,7 @@ class ProductsScreen extends StatelessWidget {
         iconTheme: IconThemeData(color: Colors.white),
         backgroundColor: AppColors().red,
         automaticallyImplyLeading: true,
-        actions: [
-          IconButton(onPressed: (){},
-            icon: Container(
-              width: 26,
-              height: 26,
-              child: Image.asset('images/icons/bubble-chat.png',color: Colors.white,),
-            ),)
-        ],
+
 
 
         bottom: PreferredSize(

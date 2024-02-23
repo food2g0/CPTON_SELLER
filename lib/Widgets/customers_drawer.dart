@@ -1,3 +1,5 @@
+import 'package:cpton_food2go_sellers/mainScreen/History_Screen.dart';
+import 'package:cpton_food2go_sellers/mainScreen/New_OrderScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -55,7 +57,6 @@ class _CustomersDrawerState extends State<CustomersDrawer> {
                       width: 100,
                       child: CircleAvatar(
                         backgroundImage: _imageUrl.isNotEmpty ? NetworkImage(_imageUrl) : AssetImage('assets/default_avatar.png') as ImageProvider<Object>?,
-// Use _imageUrl here
                       ),
                     ),
                   ),
@@ -88,16 +89,7 @@ class _CustomersDrawerState extends State<CustomersDrawer> {
               Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileScreen()));
             },
           ),
-          ListTile(
-            leading: const Icon(
-              Icons.home_max_outlined,
-              color: Colors.red,
-            ),
-            title: const Text("Home"),
-            onTap: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => HomeScreen()));
-            },
-          ),
+
           ListTile(
             leading: const Icon(
               Icons.motorcycle,
@@ -105,7 +97,7 @@ class _CustomersDrawerState extends State<CustomersDrawer> {
             ),
             title: const Text("History - Orders"),
             onTap: () {
-              // Handle the Settings item tap
+              Navigator.push(context, MaterialPageRoute(builder: (context) => HistoryScreen()));
             },
           ),
           ListTile(
@@ -126,6 +118,7 @@ class _CustomersDrawerState extends State<CustomersDrawer> {
             title: const Text("New Order"),
             onTap: () {
               // Handle the Favorites item tap
+              Navigator.push(context, MaterialPageRoute(builder: (context) => NewOrderScreen()));
             },
           ),
           ListTile(
