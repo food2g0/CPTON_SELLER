@@ -1,4 +1,3 @@
-
 import 'package:cpton_food2go_sellers/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -49,35 +48,76 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-
   Widget _buildUserListItem(DocumentSnapshot document) {
     Map<String, dynamic> data = document.data()! as Map<String, dynamic>;
 
+    // Ensure the current user is not the customer themselves
     if (_auth.currentUser!.email != data['customersEmail']) {
       final customersUID = data['customersUID'];
       if (customersUID is String) {
-        return ListTile(
-          title: Text(data['customersEmail']),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (c) => ChatPage(
-                  receiverUserEmail: data['customersEmail'],
-                  receiverUserID: customersUID,
-                ),
-              ),
-            );
+        // Check if customersImageUrl is null
+        final imageUrl = data['customerImageUrl'] as String?;
+        final imageWidget = imageUrl != null
+            ? CircleAvatar(
+          backgroundImage: NetworkImage(imageUrl),
+        )
+            : CircleAvatar(); // Provide a fallback avatar or leave it blank
+
+        // Fetch the chat room ID
+        final chatRoomId = _getChatRoomId(data['customersUID']);
+
+        // Fetch the status from the chat room document
+        return FutureBuilder<DocumentSnapshot>(
+          future: FirebaseFirestore.instance.collection('chat_rooms').doc(chatRoomId).get(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return ListTile(
+                leading: imageWidget,
+                title: Text(data['customersName'] ?? 'Customer'),
+                subtitle: Text('Loading status...'),
+              );
+            } else if (snapshot.hasError) {
+              return ListTile(
+                leading: imageWidget,
+                title: Text(data['customersName'] ?? 'Customer'),
+                subtitle: Text('Error loading status'),
+              );
+            } else {
+              final status = snapshot.data!['status'] as String?;
+              final statusText = status == 'not seen' ? 'New message' : 'seen';
+              return ListTile(
+                leading: imageWidget,
+                title: Text(data['customersName'] ?? 'Customer'),
+                subtitle: Text(statusText),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (c) => ChatPage(
+                        receiverUserEmail: data['customersEmail'],
+                        receiverUserID: customersUID,
+                      ),
+                    ),
+                  );
+                },
+              );
+            }
           },
         );
       } else {
-        print('sellersUID is not a String: $customersUID');
+        print('customersUID is not a String: $customersUID');
       }
     }
 
     return Container();
   }
 
+  String _getChatRoomId(String otherUserId) {
+    final userId = _auth.currentUser!.uid;
+    List<String> ids = [userId, otherUserId];
+    ids.sort();
+    return ids.join("_");
+  }
 
 
 
@@ -85,10 +125,13 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        title: Text("Messages",style:
+          TextStyle(color: AppColors().white,
+          fontSize: 12.sp,
+          fontFamily: "Poppins"),),
         backgroundColor: AppColors().red,
       ),
       body: _buildUserList(),
     );
   }
 }
-

@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cpton_food2go_sellers/colors.dart';
+import 'package:cpton_food2go_sellers/mainScreen/products_screen.dart';
+import 'package:cpton_food2go_sellers/uploadScreen/items_upload_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
@@ -321,6 +323,7 @@ class _MenusUploadScreenState extends State<MenusUploadScreen> {
         },
       );
     }
+    Navigator.push(context, MaterialPageRoute(builder: (c)=>ProductsScreen()));
   }
 
   Future<bool> checkOptionExists(String option) async {

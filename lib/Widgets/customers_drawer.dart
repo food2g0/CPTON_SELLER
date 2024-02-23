@@ -1,15 +1,38 @@
 import 'package:flutter/material.dart';
-
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../authentication/auth_screen.dart';
 import '../global/global.dart';
 import '../mainScreen/home_screen.dart';
+import '../mainScreen/ProfileScreen.dart';
 
-class CustomersDrawer extends StatelessWidget {
-  const CustomersDrawer({super.key });
+class CustomersDrawer extends StatefulWidget {
+  const CustomersDrawer({Key? key});
 
-  String capitalize(String text) {
-    if (text.isEmpty) return text;
-    return text[0].toUpperCase() + text.substring(1);
+  @override
+  State<CustomersDrawer> createState() => _CustomersDrawerState();
+}
+
+class _CustomersDrawerState extends State<CustomersDrawer> {
+  late String _imageUrl = ''; // Store the imageUrl in state
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserProfileImage();
+  }
+
+  Future<void> _fetchUserProfileImage() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      DocumentSnapshot<Map<String, dynamic>> snapshot = await FirebaseFirestore.instance.collection('sellers').doc(user.uid).get();
+      if (snapshot.exists) {
+        setState(() {
+          _imageUrl = snapshot.data()!['sellersImageUrl'] ?? ''; // Get the imageUrl from Firestore
+        });
+      }
+    }
   }
 
   @override
@@ -18,11 +41,10 @@ class CustomersDrawer extends StatelessWidget {
       child: ListView(
         children: [
           Container(
-            color: Colors.black87, // Set your desired background color here
+            color: Colors.black87,
             padding: const EdgeInsets.only(top: 25, bottom: 10),
             child: Column(
               children: [
-                // Header of the drawer
                 Material(
                   borderRadius: const BorderRadius.all(Radius.circular(80)),
                   elevation: 10,
@@ -32,33 +54,40 @@ class CustomersDrawer extends StatelessWidget {
                       height: 100,
                       width: 100,
                       child: CircleAvatar(
-                        backgroundImage: NetworkImage(
-                          sharedPreferences!.getString("sellersImageUrl")!,
-                        ),
+                        backgroundImage: _imageUrl.isNotEmpty ? NetworkImage(_imageUrl) : AssetImage('assets/default_avatar.png') as ImageProvider<Object>?,
+// Use _imageUrl here
                       ),
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 30),
                 Align(
                   alignment: Alignment.centerLeft,
-                 child: Padding(
-                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                 child: Text(
-                  capitalize (sharedPreferences!.getString("sellersName")!),
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontFamily: "Roboto",
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Text(
+                      capitalize(sharedPreferences!.getString("sellersName")!),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontFamily: "Roboto",
+                      ),
+                    ),
                   ),
-                ),
-                 )
                 ),
               ],
             ),
           ),
-          //body drawer
+          ListTile(
+            leading: const Icon(
+              Icons.person,
+              color: Colors.red,
+            ),
+            title: const Text("Profile"),
+            onTap: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileScreen()));
+            },
+          ),
           ListTile(
             leading: const Icon(
               Icons.home_max_outlined,
@@ -66,7 +95,7 @@ class CustomersDrawer extends StatelessWidget {
             ),
             title: const Text("Home"),
             onTap: () {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => HomeScreen(),));
+              Navigator.push(context, MaterialPageRoute(builder: (context) => HomeScreen()));
             },
           ),
           ListTile(
@@ -106,13 +135,18 @@ class CustomersDrawer extends StatelessWidget {
             ),
             title: const Text("Logout"),
             onTap: () {
-              firebaseAuth.signOut().then((value){
-                Navigator.push(context, MaterialPageRoute(builder: (c)=> const AuthScreen()));
+              firebaseAuth.signOut().then((value) {
+                Navigator.push(context, MaterialPageRoute(builder: (c) => const AuthScreen()));
               });
             },
           ),
         ],
       ),
     );
+  }
+
+  String capitalize(String text) {
+    if (text.isEmpty) return text;
+    return text[0].toUpperCase() + text.substring(1);
   }
 }

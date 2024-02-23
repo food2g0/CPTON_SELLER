@@ -44,6 +44,7 @@ class ChatService extends ChangeNotifier {
       'timestamp': timestamp,
       'senderEmail': currentUserEmail,
       'receiverId': receiverId,
+      'status': "not seen"
     });
   }
 

@@ -674,7 +674,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
                     'images/icons/bubble-chat.png', color: Colors.white),
               ),
-              label: 'Notification',
+              label: 'Messages',
             ),
           ],
           selectedItemColor: Colors.white,
