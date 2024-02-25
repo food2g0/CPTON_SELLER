@@ -7,10 +7,12 @@ class Message{
   final String message;
   final Timestamp timestamp;
   final String messageId;
+  final String senderName;
 
 
   Message( {
     required this.senderId,
+    required this.senderName,
     required this.senderEmail,
     required this.receiverId,
     required this.message,
@@ -21,6 +23,7 @@ class Message{
 
   Map<String, dynamic> toMap(){
     return{
+      'senderName': senderName,
       'senderId': senderId,
       'senderEmail': senderEmail,
       'receiverId': receiverId,

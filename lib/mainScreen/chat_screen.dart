@@ -87,12 +87,6 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
 
-  String _getChatRoomId(String otherUserId) {
-    final userId = _auth.currentUser!.uid;
-    List<String> ids = [userId, otherUserId];
-    ids.sort();
-    return ids.join("_");
-  }
 
 
 
