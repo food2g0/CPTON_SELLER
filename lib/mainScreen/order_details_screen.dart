@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cpton_food2go_sellers/Assistant/assistant_method.dart';
 import 'package:cpton_food2go_sellers/mainScreen/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -25,11 +26,13 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
   String products = "";
   String paymentDetails = "";
   late Future<DocumentSnapshot> _orderInfoFuture;
-
+  String? get orderId => widget.orderID;
+  static String? _token;
   @override
   void initState() {
     super.initState();
     _orderInfoFuture = getOrderInfo();
+    _token = "fUEa0gYoTZaFZAoUQRjJ47:APA91bFXS3CjaVPSYq2xPp60cSKYA-cxqHxpX3FjULmEiOeTcsKhm-0t7Cf3uO7PxEp6agYf1quk57VX5fEfVcJhOg1XtQFBk5244KXRPkE0cnR52OusFNTkiTDBuL3QfCQ1CFbzOAEa";
   }
 
   Future<DocumentSnapshot> getOrderInfo() {
@@ -38,6 +41,38 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
         .doc(widget.orderID)
         .get();
   }
+
+  Future<void> sendNotificationToAllRidersNow() async {
+    try {
+      // Check if the static token is not null and not empty
+      if (_token != null && _token!.isNotEmpty) {
+        // Create an instance of AssistantMethods
+        AssistantMethods assistantMethods = AssistantMethods();
+
+        // Iterate over each document in the 'token' subcollection
+        Map<String, dynamic> dataMap = {'deviceToken': _token};
+
+        // Check if the dataMap contains the required keys
+        if (dataMap.containsKey('deviceToken')) {
+          String? token = dataMap['deviceToken'];
+
+          if (token != null && token.isNotEmpty) {
+            print(token);
+            print(widget.orderID);
+
+            // Call the instance method to send notification
+            assistantMethods.sendNotificationToAllRidersNow(token, orderId!);
+          }
+        }
+      }
+    } catch (e) {
+      print('Failed to send notification: $e');
+    }
+  }
+
+
+
+
 
   Future<DocumentSnapshot> getCustomerInfo(String customerId) {
     return FirebaseFirestore.instance
@@ -309,6 +344,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                 SizedBox(height: 100.h,),
                 Center(
                   child: ElevatedButton(onPressed: (){
+                    sendNotificationToAllRidersNow();
                     confirmedParcelShipment(context);
                     Navigator.push(context, MaterialPageRoute(builder: (c)=>HomeScreen()));
                   },

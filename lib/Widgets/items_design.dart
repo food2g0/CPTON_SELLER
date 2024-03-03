@@ -29,24 +29,21 @@ class _ItemsDesignWidgetState extends State<ItemsDesignWidget> {
         String? sellersUID = sharedPreferences!.getString("sellersUID");
 
         if (sellersUID != null) {
-          // Delete the menu document from the 'menus' collection
+          // Delete the item document from the 'menus' collection
           await FirebaseFirestore.instance
               .collection("sellers")
               .doc(sellersUID)
               .collection("menus")
               .doc(widget.model!.menuID)
-          .collection("items").doc(widget.model?.productsID)
+              .collection("items")
+              .doc(widget.model!.productsID)
               .delete();
 
-          // Delete all items in the 'items' subcollection under the menu
-          QuerySnapshot itemsSnapshot = await FirebaseFirestore.instance
+          // Delete the item document from the 'items' collection
+          await FirebaseFirestore.instance
               .collection("items")
-              .get();
-
-          // Loop through each item and delete it
-          for (QueryDocumentSnapshot doc in itemsSnapshot.docs) {
-            await doc.reference.delete();
-          }
+              .doc(widget.model!.productsID)
+              .delete();
 
           // Optionally, you can add a success message or perform any other actions
           ScaffoldMessenger.of(context).showSnackBar(
@@ -61,6 +58,7 @@ class _ItemsDesignWidgetState extends State<ItemsDesignWidget> {
         );
       }
     }
+
 
 
     return InkWell(

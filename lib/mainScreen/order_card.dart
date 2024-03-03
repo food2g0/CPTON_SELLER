@@ -137,20 +137,7 @@ Widget placedOrderDesignWidget(BuildContext context, int index) {
             ),
           ),
         ),
-        TextButton(
-          onPressed: () {
-            // Handle button press (e.g., navigate to details screen)
-          },
-          child: Text(
-            "View Details",
-            style: TextStyle(
-              color: Colors.blue,
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              fontFamily: "Poppins",
-            ),
-          ),
-        ),
+
       ],
     ),
   );

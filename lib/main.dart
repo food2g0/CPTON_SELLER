@@ -4,7 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import 'package:flutter/services.dart';
 import 'global/global.dart';
 import 'firebase_options.dart';
 
@@ -12,6 +12,12 @@ import 'firebase_options.dart';
 Future<void> main() async
 {
   WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setPreferredOrientations(
+    [
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown
+    ]
+  );
 
   sharedPreferences = await SharedPreferences.getInstance();
   await Firebase.initializeApp(

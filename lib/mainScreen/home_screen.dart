@@ -49,7 +49,11 @@ class _HomeScreenState extends State<HomeScreen> {
       imageXFile = null;
       selectedOption = ""; // Clear the selected option when clearing the form
     });
+
   }
+
+
+
 
   // Define a list of available options
   List<String> options = ["Burger", "Fries", "Drinks"];

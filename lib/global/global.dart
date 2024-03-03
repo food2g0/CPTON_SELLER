@@ -3,3 +3,4 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 SharedPreferences? sharedPreferences;
 FirebaseAuth firebaseAuth = FirebaseAuth.instance;
+String serverToken ="key=AAAAxLee5Gk:APA91bFZN0RDGy34nC0ie18rRnASNYjjg44m3DbhCJWdUPAiHVLeWfPFjSdemHQLtwGJRiakuEIuB8rfCnh1RCNn0rgNVsptR9RkXzHoaSz5oivSUh5UowRhOXxI5hRZNwvnMyddF5Kn";
