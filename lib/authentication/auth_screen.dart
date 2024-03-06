@@ -12,6 +12,7 @@ import '../Widgets/loading_dialog.dart';
 import '../global/global.dart';
 import '../mainScreen/confirmation_screen.dart';
 import '../mainScreen/home_screen.dart';
+import 'forgot_password.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({Key? key}) : super(key: key);
@@ -207,6 +208,17 @@ class _AuthScreenState extends State<AuthScreen> {
                           });
                         },
                       ),
+                    ),
+                    RichText(text: TextSpan(
+                        text: "Forgot Password?",
+                        style: TextStyle(
+                          color: AppColors().black,
+                          fontFamily: "Poppins",
+                          fontSize: 12.sp,
+                        ),
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () => Get.to(() => const ForgotPassword())
+                    )
                     ),
                   ],
                 ),
