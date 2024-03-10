@@ -32,7 +32,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
   void initState() {
     super.initState();
     _orderInfoFuture = getOrderInfo();
-    _token = "fUEa0gYoTZaFZAoUQRjJ47:APA91bFXS3CjaVPSYq2xPp60cSKYA-cxqHxpX3FjULmEiOeTcsKhm-0t7Cf3uO7PxEp6agYf1quk57VX5fEfVcJhOg1XtQFBk5244KXRPkE0cnR52OusFNTkiTDBuL3QfCQ1CFbzOAEa";
+
   }
 
   Future<DocumentSnapshot> getOrderInfo() {
@@ -42,34 +42,35 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
         .get();
   }
 
-  Future<void> sendNotificationToAllRidersNow() async {
-    try {
-      // Check if the static token is not null and not empty
-      if (_token != null && _token!.isNotEmpty) {
-        // Create an instance of AssistantMethods
-        AssistantMethods assistantMethods = AssistantMethods();
+  void sendNotificationToUserNow(String orderId, String orderBy) {
+    FirebaseFirestore.instance.collection("users").doc(orderBy).get().then((DocumentSnapshot snap) {
+      if (snap.exists) {
+        Map<String, dynamic>? userData = snap.data() as Map<String, dynamic>?;
 
-        // Iterate over each document in the 'token' subcollection
-        Map<String, dynamic> dataMap = {'deviceToken': _token};
+        if (userData != null && userData.containsKey('registrationToken')) {
+          String registrationToken = userData['registrationToken'] as String;
 
-        // Check if the dataMap contains the required keys
-        if (dataMap.containsKey('deviceToken')) {
-          String? token = dataMap['deviceToken'];
+          //send notification
+          AssistantMethods.sendNotificationToUserNow(registrationToken, orderId,);
 
-          if (token != null && token.isNotEmpty) {
-            print(token);
-            print(widget.orderID);
 
-            // Call the instance method to send notification
-            assistantMethods.sendNotificationToAllRidersNow(token, orderId!);
+          if (registrationToken.isNotEmpty) {
+            // Send notification using the registrationToken
+            print('Registration token found: $registrationToken');
+            // Call your notification sending function here with the registrationToken
+          } else {
+            print('Registration token not found or empty.');
           }
+        } else {
+          print('Registration token not found in user data.');
         }
+      } else {
+        print('User document not found for order by: $orderBy');
       }
-    } catch (e) {
-      print('Failed to send notification: $e');
-    }
+    }).catchError((error) {
+      print("Error retrieving user document: $error");
+    });
   }
-
 
 
 
@@ -344,7 +345,7 @@ class _OrderDetailsScreenState extends State<OrderDetailsScreen> {
                 SizedBox(height: 100.h,),
                 Center(
                   child: ElevatedButton(onPressed: (){
-                    sendNotificationToAllRidersNow();
+                    sendNotificationToUserNow(orderId!, orderByUser);
                     confirmedParcelShipment(context);
                     Navigator.push(context, MaterialPageRoute(builder: (c)=>HomeScreen()));
                   },

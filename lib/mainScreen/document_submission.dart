@@ -12,7 +12,7 @@ import '../global/global.dart';
 import 'confirmation_screen.dart';
 
 class DocumentSubmission extends StatefulWidget {
-  const DocumentSubmission({super.key});
+  const DocumentSubmission({Key? key});
 
   @override
   State<DocumentSubmission> createState() => _DocumentSubmissionState();
@@ -22,18 +22,19 @@ class _DocumentSubmissionState extends State<DocumentSubmission> {
   PlatformFile? driverLicenseFile;
   UploadTask? driverLicenseUploadTask;
 
-  Future selectDriverLicenseFile() async {
+  Future<void> selectDriverLicenseFile() async {
     final result = await FilePicker.platform.pickFiles();
-    if (result == null) return;
+    if (result == null || result.files.isEmpty) return;
 
     setState(() {
       driverLicenseFile = result.files.first;
-    });
+  });
   }
 
-  Future uploadDriverLicenseFile() async {
+  Future<void> uploadDriverLicenseFile() async {
     await _uploadFile(driverLicenseFile, (snapshot) {
-      driverLicenseUploadTask = null;
+      // Callback after upload completes
+      print("Upload complete");
     });
   }
 
@@ -47,52 +48,66 @@ class _DocumentSubmissionState extends State<DocumentSubmission> {
     final fileContent = File(file.path!);
 
     final ref = FirebaseStorage.instance.ref().child(path);
+
     setState(() {
       driverLicenseUploadTask = ref.putFile(fileContent);
     });
 
-    final snapshot = await driverLicenseUploadTask!.whenComplete(() {});
-
-    // Get the download URL of the uploaded document
+    final snapshot = await driverLicenseUploadTask!;
     final urlDownload = await snapshot.ref.getDownloadURL();
 
-    // Get the current user
-    User? currentUser = FirebaseAuth.instance.currentUser;
-
-    // Save the document URL to Firestore
-    await saveDataToFirestore(currentUser!, urlDownload);
-
-    // Call onComplete callback
-    onComplete(snapshot);
-
-    // Navigate to the next screen
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => ConfirmationScreen()),
-    );
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null) {
+      await saveDataToFirestore(currentUser, urlDownload);
+      onComplete(snapshot);
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => ConfirmationScreen()),
+      );
+    }
   }
 
-  Future saveDataToFirestore(User currentUser, String documentUrl) async {
-    // Get the current user's UID
-    String uid = currentUser.uid;
-
-    // Construct the data to be saved to Firestore
-    Map<String, dynamic> userData = {
-      "documentUrl": documentUrl, // URL of the submitted document
-      // Add other user data as needed
-    };
-
+  Future<void> saveDataToFirestore(User currentUser, String documentUrl) async {
     try {
-      // Save the data to Firestore
-      await FirebaseFirestore.instance.collection("sellersDocs").doc(uid).set(userData);
+      final uid = currentUser.uid;
+      final userData = {"documentUrl": documentUrl};
 
-      // Save data locally if needed
-      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await FirebaseFirestore.instance
+          .collection("sellersDocs")
+          .doc(uid)
+          .set(userData);
+
+      final prefs = await SharedPreferences.getInstance();
       await prefs.setString("documentUrl", documentUrl);
     } catch (error) {
       print("Error saving data to Firestore: $error");
-      // Handle error
     }
+  }
+  Future<void> _checkEmailVerification() async {
+    final currentUser = FirebaseAuth.instance.currentUser;
+    if (currentUser != null && !currentUser.emailVerified) {
+      // If email is not verified, show a dialog
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text('Email Not Verified'),
+          content: Text('Please open your email to verify your account.'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('OK'),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+  @override
+  void initState() {
+    super.initState();
+    _checkEmailVerification();
   }
 
   @override
@@ -126,34 +141,38 @@ class _DocumentSubmissionState extends State<DocumentSubmission> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors().red,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10.w)
+                  borderRadius: BorderRadius.circular(10.w),
                 ),
                 minimumSize: Size(210, 40),
               ),
               onPressed: selectDriverLicenseFile,
-              child: Text("Select Business Permit File",
-              style: TextStyle(
-                color: AppColors().white,
-                fontFamily: "Poppins",
-                fontSize: 12.sp
-              ),),
+              child: Text(
+                "Select Business Permit File",
+                style: TextStyle(
+                  color: AppColors().white,
+                  fontFamily: "Poppins",
+                  fontSize: 12.sp,
+                ),
+              ),
             ),
             SizedBox(height: 20.h),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors().green,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10.w)
+                  borderRadius: BorderRadius.circular(10.w),
                 ),
                 minimumSize: Size(210, 40),
               ),
               onPressed: uploadDriverLicenseFile,
-              child: Text("Upload File",
-              style: TextStyle(
-                color: AppColors().white,
-                fontSize: 12.sp,
-                fontFamily: "Poppins"
-              ),),
+              child: Text(
+                "Upload File",
+                style: TextStyle(
+                  color: AppColors().white,
+                  fontSize: 12.sp,
+                  fontFamily: "Poppins",
+                ),
+              ),
             ),
             SizedBox(height: 20.h),
           ],

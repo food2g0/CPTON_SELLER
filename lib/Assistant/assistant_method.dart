@@ -5,41 +5,43 @@ import 'package:http/http.dart' as http;
 
 class AssistantMethods
 {
-  sendNotificationToAllRidersNow(String deviceRegistrationToken, String orderId) async {
-    Map<String, String> header = {
+  static sendNotificationToUserNow(String registrationToken, String orderId) async {
+    Map<String, String> headerNotification = {
       'Content-Type': 'application/json',
       'Authorization': serverToken,
     };
 
-    Map body = {
-      "body": "Hurry!! there are new orders.",
-      "title": "New Order arrived",
+    Map bodyNotification = {
+      "body": "Your order is ready to pick and ready to be delivered.",
+      "title": "Order is ready to pick"
     };
 
     Map dataMap = {
-      "click_action": "FLUTTER_NOTIFICATION_CLICK",
+      "clcik_action": "FLUTTER_NOTIFICATION_CLICK",
       "id": "1",
-      "status": "done",
-      "orderId": orderId,
+      "status": "ToPay",
+      "orderId": orderId
     };
 
     Map officialNotificationFormat = {
-      "notification": body,
+      "notification": bodyNotification,
       "data": dataMap,
       "priority": "high",
-      "to": deviceRegistrationToken,
+      "to": registrationToken,
     };
 
-    try {
-      var responseNotification = await http.post(
-        Uri.parse("https://fcm.googleapis.com/fcm/send"),
-        headers: header,
-        body: jsonEncode(officialNotificationFormat),
-      );
-      // Handle response if needed
-    } catch (e) {
-      // Handle errors
-      print('Failed to send notification: $e');
+    var responseNotification = await http.post( // Await the http.post() call
+      Uri.parse("https://fcm.googleapis.com/fcm/send"),
+      headers: headerNotification,
+      body: jsonEncode(officialNotificationFormat),
+    );
+
+    // Handle response if needed
+    if (responseNotification.statusCode == 200) {
+      print('Notification sent successfully');
+    } else {
+      print('Failed to send notification. Status code: ${responseNotification.statusCode}');
+      print('Response body: ${responseNotification.body}');
     }
   }
 

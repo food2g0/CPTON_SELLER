@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -12,8 +13,37 @@ class NewOrderScreen extends StatefulWidget {
   @override
   State<NewOrderScreen> createState() => _NewOrderScreenState();
 }
+Future<String?> getCurrentUserID() async {
+  // Get the current user from Firebase Authentication
+  User? user = FirebaseAuth.instance.currentUser;
+
+  // Check if the user is logged in
+  if (user != null) {
+    // Return the user ID
+    return user.uid;
+  } else {
+    // User is not logged in, return null
+    return null;
+  }
+}
+
+
 
 class _NewOrderScreenState extends State<NewOrderScreen> {
+  String? currentUserId;
+  @override
+  void initState() {
+    super.initState();
+
+    // Call the method to get the current user ID
+    getCurrentUserID().then((userId) {
+      // Assign the user ID to currentUserId
+      setState(() {
+        currentUserId = userId;
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -42,9 +72,11 @@ class _NewOrderScreenState extends State<NewOrderScreen> {
                 ),
               ),
             ),
+
             StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance.collection("orders")
                   .where("status", isEqualTo: "normal")
+                  .where("sellerUID", isEqualTo: currentUserId)
               // Add more conditions if needed
                   .orderBy("orderTime", descending: true)
                   .snapshots(),

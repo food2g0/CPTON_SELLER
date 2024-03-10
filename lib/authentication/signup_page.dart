@@ -551,8 +551,31 @@ class _SignUpPageState extends State<SignUpPage> {
                         // Perform form validation
                         bool isValid = await formValidation();
                         if (isValid) {
-                          // Navigate only if the validation is successful
-                          Navigator.push(context, MaterialPageRoute(builder: (c) => DocumentSubmission()));
+                          // Check if the user's email is verified
+                          User? currentUser = FirebaseAuth.instance.currentUser;
+                          if (currentUser != null && currentUser.emailVerified) {
+                            // Navigate to the document submission screen
+                            Navigator.push(context, MaterialPageRoute(builder: (c) => DocumentSubmission()));
+                          } else {
+                            // Show a dialog informing the user to verify their email
+                            showDialog(
+                              context: context,
+                              builder: (c) {
+                                return AlertDialog(
+                                  title: Text('Email Not Verified'),
+                                  content: Text('Please check your email to verify your account.'),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: Text('OK'),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          }
                         }
                       },
                       style: ElevatedButton.styleFrom(

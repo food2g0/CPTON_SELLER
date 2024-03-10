@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cpton_food2go_sellers/authentication/signup_page.dart';
 import 'package:cpton_food2go_sellers/colors.dart';
+import 'package:cpton_food2go_sellers/mainScreen/document_submission.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -26,6 +27,7 @@ class _AuthScreenState extends State<AuthScreen> {
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   bool isPasswordVisible = false;
+  bool agreedToTerms = false;
 
   formValidation() {
     if (emailController.text.isNotEmpty && passwordController.text.isNotEmpty) {
@@ -91,7 +93,7 @@ class _AuthScreenState extends State<AuthScreen> {
           // Status is disapproved, navigate to the ConfirmationScreen
           Navigator.pop(context);
           Route newRoute = MaterialPageRoute(
-            builder: (c) => const ConfirmationScreen(),
+            builder: (c) => const DocumentSubmission(),
           );
           Navigator.pushReplacement(context, newRoute);
         } else if (status == "approved") {
@@ -209,16 +211,95 @@ class _AuthScreenState extends State<AuthScreen> {
                         },
                       ),
                     ),
-                    RichText(text: TextSpan(
-                        text: "Forgot Password?",
-                        style: TextStyle(
-                          color: AppColors().black,
-                          fontFamily: "Poppins",
-                          fontSize: 12.sp,
+                    Row(
+                      children: [
+                        Checkbox(
+                          value: agreedToTerms,
+                          onChanged: (value) {
+                            setState(() {
+                              agreedToTerms = value!;
+                            });
+                          },
                         ),
-                        recognizer: TapGestureRecognizer()
-                          ..onTap = () => Get.to(() => const ForgotPassword())
-                    )
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return AlertDialog(
+                                    title: Text("Terms and Conditions", style: TextStyle(
+                                        fontFamily: "Poppins",
+                                        fontSize: 10.sp,
+                                        fontWeight: FontWeight.bold
+
+                                    ),),
+                                    content: SingleChildScrollView(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            "1. Prior to using the program, make sure your store is switched on, and after using it, turn it off.",
+                                            style: TextStyle(fontFamily: "Poppins",
+                                                fontSize: 8.sp),
+                                          ),
+                                          SizedBox(height: 5,),
+                                          Text(
+                                            "2. As per agreement, store owners are mandatory to give 10% of their income to food2go. ", style: TextStyle(fontFamily: "Poppins",
+                                              fontSize: 8.sp),),
+                                          SizedBox(height: 5,),
+                                          Text(
+                                            "3. Failure to give 10% will result to account termination", style: TextStyle(fontFamily: "Poppins",
+                                              fontSize: 8.sp),),
+                                          SizedBox(height: 5,),
+                                          Text(
+                                            "4. Make sure to remain your ratings high, making your rating low will result to account suspension or termination", style: TextStyle(fontFamily: "Poppins",
+                                              fontSize: 8.sp),),
+                                        ],
+                                      ),
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: Text("Close"),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            },
+                            child: Text(
+                              "I agree to the Terms and Conditions",
+                              style: TextStyle(
+                                color: AppColors().black,
+                                fontFamily: "Poppins",
+                                fontSize: 8.sp,
+                              ),
+                            ),
+
+                          ),
+
+                        ),
+                      ],
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 20, top: 20),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: RichText(text: TextSpan(
+                            text: "Forgot Password?",
+                            style: TextStyle(
+                              color: AppColors().black,
+                              fontFamily: "Poppins",
+                              fontSize: 12.sp,
+                            ),
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () => Get.to(() => const ForgotPassword())
+                        )
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -245,7 +326,27 @@ class _AuthScreenState extends State<AuthScreen> {
                 ),
               ),
               onPressed: () {
-                formValidation();
+                if (!agreedToTerms) {
+                  showDialog(
+                    context: context,
+                    builder: (context) {
+                      return AlertDialog(
+                        title: Text("Error"),
+                        content: Text("Please agree to the Terms and Conditions to proceed."),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: Text("OK"),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                } else {
+                  formValidation();
+                }
               },
             ),
             SizedBox(height: w * 0.08),

@@ -31,7 +31,7 @@ class CustomTextField extends StatelessWidget {
 
   String? _validateemail(String? value) {
     if (value == null || value.isEmpty) {
-      return "Full Name is required";
+      return "email is required";
     } else if (!RegExp(r'^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$')
         .hasMatch(value)) {
       return "Please enter a valid Full Name";
