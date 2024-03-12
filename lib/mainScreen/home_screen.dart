@@ -11,10 +11,12 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import '../Widgets/customers_drawer.dart';
 
+import '../authentication/auth_screen.dart';
 import '../colors.dart';
 import '../global/global.dart';
 import '../models/Sales.dart';
 import '../models/menus.dart';
+import '../push notification/push_notification_system.dart';
 import '../uploadScreen/menus_upload_screen.dart';
 
 
@@ -61,11 +63,14 @@ class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
   late String sellersUID = '';
 
+
   @override
   void initState() {
     super.initState();
     fetchSellersUID();
+
   }
+
 
   Future<void> getOrderDetails() async {
     try {
@@ -146,6 +151,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+
   List<charts.Series<Sales, String>> _seriesBarData = [];
 
   late List<Sales> myData;
@@ -185,6 +191,33 @@ class _HomeScreenState extends State<HomeScreen> {
               return Text('Error: ${snapshot.error}');
             }
             var sellerName = snapshot.data!.get('sellersName');
+            var sellerStatus = snapshot.data!.get('status');
+            if (sellerStatus == 'blocked') {
+              // Show a dialog and navigate to the auth screen
+              WidgetsBinding.instance!.addPostFrameCallback((_) {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: Text('Blocked'),
+                    content: Text('You have been blocked from using the app.'),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          // Navigate to the auth screen
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => AuthScreen(),
+                            ),
+                          );
+                        },
+                        child: Text('OK'),
+                      ),
+                    ],
+                  ),
+                );
+              });
+            }
             return RichText(
               text: TextSpan(
                 text: 'Welcome, ',
@@ -273,7 +306,12 @@ class _HomeScreenState extends State<HomeScreen> {
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return CircularProgressIndicator();
+            return Center(
+              child: SizedBox(
+                  height: 24.h,
+                  width: 24.w,
+                  child: CircularProgressIndicator()),
+            );
           }
           if (snapshot.hasError) {
             return Text('Error: ${snapshot.error}');
@@ -390,7 +428,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 .snapshots(),
                                             builder: (context, snapshot) {
                                               if (snapshot.connectionState == ConnectionState.waiting) {
-                                                return CircularProgressIndicator();
+                                                return Center(
+                                                  child: SizedBox(
+                                                      height: 24.h,
+                                                      width: 24.w,
+                                                      child: CircularProgressIndicator()),
+                                                );
                                               }
                                               if (snapshot.hasError) {
                                                 return Text('Error: ${snapshot.error}');
@@ -400,7 +443,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 future: _calculateTotalItems(menuIds),
                                                 builder: (context, itemCountSnapshot) {
                                                   if (itemCountSnapshot.connectionState == ConnectionState.waiting) {
-                                                    return CircularProgressIndicator();
+                                                    return Center(
+                                                      child: SizedBox(
+                                                        height: 24.h,
+                                                          width: 24.w,
+                                                          child: CircularProgressIndicator()),
+                                                    );
                                                   }
                                                   if (itemCountSnapshot.hasError) {
                                                     return Text('Error: ${itemCountSnapshot.error}');
@@ -549,7 +597,12 @@ class _HomeScreenState extends State<HomeScreen> {
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return SliverToBoxAdapter(
-                  child: CircularProgressIndicator(),
+                  child: Center(
+                    child: SizedBox(
+                        height: 24.h,
+                        width: 24.w,
+                        child: CircularProgressIndicator()),
+                  ),
                 );
               }
               if (snapshot.hasError) {

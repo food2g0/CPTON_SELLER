@@ -1,4 +1,5 @@
 
+import 'package:cpton_food2go_sellers/mainScreen/view_ratings.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/material.dart';
@@ -364,7 +365,9 @@ class _ItemDetailsScreenState extends State<ItemDetailsScreen> {
                         ),
                         SizedBox(width: 10.0.w),
                         TextButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            Navigator.push(context, MaterialPageRoute(builder: (c)=>ViewRatings()));
+                          },
                           child: Text(
                             'View All Reviews',
                             style: TextStyle(

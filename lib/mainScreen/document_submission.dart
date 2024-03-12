@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../colors.dart';
 import '../global/global.dart';
+import '../push notification/push_notification_system.dart';
 import 'confirmation_screen.dart';
 
 class DocumentSubmission extends StatefulWidget {
@@ -104,10 +105,12 @@ class _DocumentSubmissionState extends State<DocumentSubmission> {
       );
     }
   }
+
   @override
   void initState() {
     super.initState();
     _checkEmailVerification();
+
   }
 
   @override

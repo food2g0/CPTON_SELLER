@@ -1,3 +1,4 @@
+import 'package:cpton_food2go_sellers/mainScreen/Earnings_screen.dart';
 import 'package:cpton_food2go_sellers/mainScreen/History_Screen.dart';
 import 'package:cpton_food2go_sellers/mainScreen/New_OrderScreen.dart';
 import 'package:flutter/material.dart';
@@ -71,7 +72,7 @@ class _CustomersDrawerState extends State<CustomersDrawer> {
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 14,
-                        fontFamily: "Roboto",
+                        fontFamily: "Poppins",
                       ),
                     ),
                   ),
@@ -84,7 +85,7 @@ class _CustomersDrawerState extends State<CustomersDrawer> {
               Icons.person,
               color: Colors.red,
             ),
-            title: const Text("Profile"),
+            title: const Text("Profile",style: TextStyle( fontFamily: "Poppins",),),
             onTap: () {
               Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileScreen()));
             },
@@ -95,7 +96,7 @@ class _CustomersDrawerState extends State<CustomersDrawer> {
               Icons.motorcycle,
               color: Colors.red,
             ),
-            title: const Text("History - Orders"),
+            title: const Text("History - Orders",style: TextStyle( fontFamily: "Poppins",),),
             onTap: () {
               Navigator.push(context, MaterialPageRoute(builder: (context) => HistoryScreen()));
             },
@@ -105,9 +106,10 @@ class _CustomersDrawerState extends State<CustomersDrawer> {
               Icons.attach_money_outlined,
               color: Colors.red,
             ),
-            title: const Text("My Earnings"),
+            title: const Text("My Earnings",style: TextStyle( fontFamily: "Poppins",),),
             onTap: () {
               // Handle the About item tap
+              Navigator.push(context, MaterialPageRoute(builder: (c)=> EarningsScreen()));
             },
           ),
           ListTile(
@@ -115,7 +117,7 @@ class _CustomersDrawerState extends State<CustomersDrawer> {
               Icons.reorder_outlined,
               color: Colors.red,
             ),
-            title: const Text("New Order"),
+            title: const Text("New Order",style: TextStyle( fontFamily: "Poppins",),),
             onTap: () {
               // Handle the Favorites item tap
               Navigator.push(context, MaterialPageRoute(builder: (context) => NewOrderScreen()));
@@ -126,7 +128,7 @@ class _CustomersDrawerState extends State<CustomersDrawer> {
               Icons.logout_rounded,
               color: Colors.red,
             ),
-            title: const Text("Logout"),
+            title: const Text("Logout",style: TextStyle( fontFamily: "Poppins",),),
             onTap: () {
               firebaseAuth.signOut().then((value) {
                 Navigator.push(context, MaterialPageRoute(builder: (c) => const AuthScreen()));

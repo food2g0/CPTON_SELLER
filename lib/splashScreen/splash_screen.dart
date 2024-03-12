@@ -1,11 +1,14 @@
 import 'dart:async';
 
+import 'package:cpton_food2go_sellers/colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 
 import '../authentication/auth_screen.dart';
 import '../global/global.dart';
 import '../mainScreen/home_screen.dart';
+import '../push notification/push_notification_system.dart';
 
 
 
@@ -26,7 +29,7 @@ class _MySplashScreenState extends State<MySplashScreen>
   {
 
 
-    Timer(const Duration(seconds: 1),()async{
+    Timer(const Duration(seconds: 5),()async{
 
       //if seller is already logged in
 
@@ -49,6 +52,7 @@ class _MySplashScreenState extends State<MySplashScreen>
     super.initState();
 
     startTimer();
+
   }
 
   @override
@@ -56,7 +60,7 @@ class _MySplashScreenState extends State<MySplashScreen>
     return Material(
 
       child: Container(
-        color: Colors.black,
+        color: AppColors().black,
         child: Center(
 
           child: Column(
@@ -65,20 +69,23 @@ class _MySplashScreenState extends State<MySplashScreen>
               Padding(
 
                 padding: const EdgeInsets.all(8.0),
-                child: Image.asset("images/splashscreen.png"),
+                child: SizedBox(
+                  height: 150.h,
+                    width: 150.w,
+                    child: Image.asset("images/delivery.png")),
               ),
 
               const   SizedBox(height: 10,),
 
-              const Padding(
+             Padding(
                 padding: EdgeInsets.all(8.0),
                 child: Text(
-                  "",
+                  "Welcome food2go merchant",
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: Colors.black54,
-                    fontSize: 40,
-                    fontFamily: "Signatra",
+                    color: AppColors().white,
+                    fontSize: 10.sp,
+                    fontFamily: "Poppins",
                     letterSpacing: 3,
                   ),
                 ),
@@ -88,7 +95,9 @@ class _MySplashScreenState extends State<MySplashScreen>
         ),
       ),
     );
+
   }
+
 }
 
 

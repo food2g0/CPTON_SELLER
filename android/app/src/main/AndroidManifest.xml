@@ -8,6 +8,11 @@
         android:label="Merchant"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
+
+
+
+
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -33,6 +38,7 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+
         </activity>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
