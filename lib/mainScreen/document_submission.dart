@@ -33,28 +33,37 @@ class _DocumentSubmissionState extends State<DocumentSubmission> {
   }
 
   Future<void> uploadDriverLicenseFile() async {
-    await _uploadFile(driverLicenseFile, (snapshot) {
+    final task = await _uploadFile(driverLicenseFile, (snapshot) {
       // Callback after upload completes
       print("Upload complete");
     });
+    setState(() {
+      driverLicenseUploadTask = task;
+    });
   }
 
-  Future<void> _uploadFile(
+
+  Future<UploadTask> _uploadFile(
       PlatformFile? file,
       void Function(TaskSnapshot) onComplete,
       ) async {
-    if (file == null) return;
+    if (file == null) throw Exception("File is null");
 
     final path = 'SellerFiles/${file.name}';
     final fileContent = File(file.path!);
 
     final ref = FirebaseStorage.instance.ref().child(path);
 
-    setState(() {
-      driverLicenseUploadTask = ref.putFile(fileContent);
+    final uploadTask = ref.putFile(fileContent);
+
+    uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
+      print('Task state: ${snapshot.state}');
+      print('Progress: ${(snapshot.bytesTransferred / snapshot.totalBytes) * 100} %');
+    }, onError: (dynamic error) {
+      print('Upload error: $error');
     });
 
-    final snapshot = await driverLicenseUploadTask!;
+    final snapshot = await uploadTask;
     final urlDownload = await snapshot.ref.getDownloadURL();
 
     final currentUser = FirebaseAuth.instance.currentUser;
@@ -66,7 +75,38 @@ class _DocumentSubmissionState extends State<DocumentSubmission> {
         MaterialPageRoute(builder: (context) => ConfirmationScreen()),
       );
     }
+    return uploadTask;
   }
+
+
+  // Future<void> _uploadFile(
+  //     PlatformFile? file,
+  //     void Function(TaskSnapshot) onComplete,
+  //     ) async {
+  //   if (file == null) return;
+  //
+  //   final path = 'SellerFiles/${file.name}';
+  //   final fileContent = File(file.path!);
+  //
+  //   final ref = FirebaseStorage.instance.ref().child(path);
+  //
+  //   setState(() {
+  //     driverLicenseUploadTask = ref.putFile(fileContent);
+  //   });
+  //
+  //   final snapshot = await driverLicenseUploadTask!;
+  //   final urlDownload = await snapshot.ref.getDownloadURL();
+  //
+  //   final currentUser = FirebaseAuth.instance.currentUser;
+  //   if (currentUser != null) {
+  //     await saveDataToFirestore(currentUser, urlDownload);
+  //     onComplete(snapshot);
+  //     Navigator.push(
+  //       context,
+  //       MaterialPageRoute(builder: (context) => ConfirmationScreen()),
+  //     );
+  //   }
+  // }
 
   Future<void> saveDataToFirestore(User currentUser, String documentUrl) async {
     try {

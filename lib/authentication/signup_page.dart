@@ -55,7 +55,10 @@ class _SignUpPageState extends State<SignUpPage> {
     "Fast Food",
     "Burger Shop",
     "Dessert Shop",
-    // Add more categories as needed
+    "Pizza",
+    "Pastry",
+    "Japanese Restaurant",
+    "Korean Restaurant"
   ];
   // Default category
 

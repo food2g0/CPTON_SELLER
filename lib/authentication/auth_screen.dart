@@ -130,8 +130,19 @@ class _AuthScreenState extends State<AuthScreen> {
           );
         }
       }
+    }).catchError((error) {
+      Navigator.pop(context);
+      showDialog(
+        context: context,
+        builder: (c) {
+          return ErrorDialog(
+            message: error.message.toString(),
+          );
+        },
+      );
     });
   }
+
 
   @override
   Widget build(BuildContext context) {
