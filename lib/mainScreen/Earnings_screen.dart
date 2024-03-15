@@ -54,7 +54,7 @@ class _EarningsScreenState extends State<EarningsScreen> {
   Widget build(BuildContext context) {
     // Calculate 10% of total earnings
     double totalEarningsGcashAndCod = totalEarnings + totalEarningsCashonDelivery;
-    double tenPercent = (totalEarnings + totalEarningsCashonDelivery) * 0.1;
+    double tenPercent = (totalEarnings ) * 0.1;
     // Calculate earnings after deducting 10%
     double earningsAfterDeduction = totalEarnings  - tenPercent;
 
