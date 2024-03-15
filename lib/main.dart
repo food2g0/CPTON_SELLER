@@ -3,8 +3,10 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/services.dart';
+import 'Assistant/message_counter.dart';
 import 'global/global.dart';
 import 'firebase_options.dart';
 
@@ -31,12 +33,17 @@ Future<void> main() async
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return ScreenUtilInit(
-      designSize: Size(393, 873),
-      builder: (context, child) => GetMaterialApp(
-        title: 'Food To Go',
-        debugShowCheckedModeBanner: false,
-        home: MySplashScreen(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (c)=> ChatRoomProvider()),
+      ],
+      child: ScreenUtilInit(
+        designSize: Size(393, 873),
+        builder: (context, child) => GetMaterialApp(
+          title: 'Food To Go',
+          debugShowCheckedModeBanner: false,
+          home: MySplashScreen(),
+        ),
       ),
     );
   }

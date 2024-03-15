@@ -9,6 +9,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
+import '../Assistant/message_counter.dart';
 import '../Widgets/customers_drawer.dart';
 
 import '../authentication/auth_screen.dart';
@@ -479,33 +481,57 @@ class _HomeScreenState extends State<HomeScreen> {
 
 
 
-                                Card(
-                                  elevation: 2,
-                                  child: Container(
-                                    width: 110.w,
-                                    height: 100.h,
-                                    child: Padding(
-                                      padding: EdgeInsets.all(5.w),
-                                      child: Row(
-                                        mainAxisAlignment: MainAxisAlignment
-                                            .center,
-                                        crossAxisAlignment: CrossAxisAlignment
-                                            .start,
-                                        children: [
-                                          Text(
-                                            'Total Order',
-                                            style: TextStyle(
-                                              fontSize: 10.sp,
-                                              fontFamily: "Poppins",
-                                              fontWeight: FontWeight.w600,
-                                              color: AppColors().red,
-                                            ),
+                                StreamBuilder(
+                                  stream: FirebaseFirestore.instance
+                                      .collection('orders')
+                                      .where('sellerUID', isEqualTo: sellersUID)
+                                      .snapshots(),
+                                  builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                                    if (snapshot.connectionState == ConnectionState.waiting) {
+                                      return CircularProgressIndicator(); // or any other loading indicator
+                                    }
+                                    if (snapshot.hasError) {
+                                      return Text('Error: ${snapshot.error}');
+                                    }
+                                    int totalOrders = snapshot.data!.docs.length;
+                                    return Card(
+                                      elevation: 2,
+                                      child: Container(
+                                        width: 110.w,
+                                        height: 100.h,
+                                        child: Padding(
+                                          padding: EdgeInsets.all(5.w),
+                                          child: Column(
+                                            mainAxisAlignment: MainAxisAlignment.start,
+                                            crossAxisAlignment: CrossAxisAlignment.center,
+                                            children: [
+                                              Text(
+                                                'Total Order:',
+                                                style: TextStyle(
+                                                  fontSize: 10.sp,
+                                                  fontFamily: "Poppins",
+                                                  fontWeight: FontWeight.w600,
+                                                  color: AppColors().red,
+                                                ),
+                                              ),
+                                              SizedBox(height: 5.h,),
+                                              Text(
+                                                '$totalOrders',
+                                                style: TextStyle(
+                                                  fontSize: 20.sp,
+                                                  fontFamily: "Poppins",
+                                                  fontWeight: FontWeight.w600,
+                                                  color: AppColors().black,
+                                                ),
+                                              ),
+                                            ],
                                           ),
-                                        ],
+                                        ),
                                       ),
-                                    ),
-                                  ),
-                                ),
+                                    );
+                                  },
+                                )
+
                               ],
                             )
                           ],
@@ -725,15 +751,41 @@ class _HomeScreenState extends State<HomeScreen> {
               label: 'Add Products',
             ),
             BottomNavigationBarItem(
-              icon: Container(
-                width: 20.w,
-                height: 20.h,
-                child: Image.asset(
-
-                    'images/icons/bubble-chat.png', color: Colors.white),
+              icon: Stack(
+                children: [
+                  Image.asset(
+                    'images/icons/bubble-chat.png',
+                    color: AppColors().white,
+                    width: 20,
+                    height: 20,
+                  ),
+                  Positioned(
+                    top: -9,
+                    right: 2,
+                    child: Consumer<ChatRoomProvider>(
+                      builder: (context, counter, c) {
+                        return Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppColors().white,
+                          ),
+                          padding: EdgeInsets.all(4.0.w), // Adjust the padding as needed
+                          child: Text(
+                            counter.unseenMessagesCount.toString(),
+                            style: TextStyle(
+                              color: AppColors().red,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  )
+                ],
               ),
               label: 'Messages',
             ),
+
           ],
           selectedItemColor: Colors.white,
           unselectedItemColor: Colors.grey,

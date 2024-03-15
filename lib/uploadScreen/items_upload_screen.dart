@@ -29,7 +29,6 @@ class _ItemsUploadScreenState extends State<ItemsUploadScreen> {
   TextEditingController descriptionController = TextEditingController();
   TextEditingController titleController = TextEditingController();
   TextEditingController priceController = TextEditingController();
-  TextEditingController quantityController = TextEditingController();
 
   String uniqueIdName = DateTime.now().millisecondsSinceEpoch.toString();
   bool uploading = false;
@@ -278,34 +277,13 @@ class _ItemsUploadScreenState extends State<ItemsUploadScreen> {
               ),
             ),
           ),
+
           ListTile(
-            leading: Icon(Icons.shopping_cart, color: AppColors().red),
+            leading: Icon(Icons.currency_ruble, color: AppColors().red),
             title: Container(
               width: 250,
               child: TextFormField(
-                style: TextStyle(color: AppColors().black1),
-                controller: quantityController,
-                keyboardType: TextInputType.number,
-                inputFormatters: <TextInputFormatter>[
-                  FilteringTextInputFormatter.digitsOnly
-                ],
-                decoration: InputDecoration(
-                  hintText: "Quantity",
-                  hintStyle: TextStyle(
-                    color: AppColors().black1,
-                    fontSize: 12.sp,
-                    fontFamily: "Poppins",
-                  ),
-                  border: OutlineInputBorder(),
-                ),
-              ),
-            ),
-          ),
-          ListTile(
-            leading: Icon(Icons.attach_money, color: AppColors().red),
-            title: Container(
-              width: 250,
-              child: TextFormField(
+                maxLength: 5,
                 style: TextStyle(color: AppColors().black1),
                 controller: priceController,
                 keyboardType: TextInputType.number,
@@ -380,7 +358,7 @@ class _ItemsUploadScreenState extends State<ItemsUploadScreen> {
               ),
               ListTile(
                 leading: Icon(
-                  Icons.attach_money,
+                  Icons.currency_ruble,
                   color: Colors.red[700],
                 ),
                 title: TextFormField(
@@ -390,6 +368,7 @@ class _ItemsUploadScreenState extends State<ItemsUploadScreen> {
                     });
                   },
                   keyboardType: TextInputType.number,
+                  maxLength: 5,
                   decoration: InputDecoration(
                     labelText: 'Price',
                     labelStyle: TextStyle(
@@ -492,7 +471,10 @@ class _ItemsUploadScreenState extends State<ItemsUploadScreen> {
   }
 
   uploadValidateForm() async {
-    if (imageXFile != null) {
+    if (imageXFile != null &&
+        titleController.text.isNotEmpty &&
+        descriptionController.text.isNotEmpty &&
+        priceController.text.isNotEmpty) {
       setState(() {
         uploading = true;
       });
@@ -503,7 +485,7 @@ class _ItemsUploadScreenState extends State<ItemsUploadScreen> {
         context: context,
         builder: (c) {
           return ErrorDialog(
-            message: "Please Pick an Image for Menu.",
+            message: "Please fill all the fields and pick an image for the menu.",
           );
         },
       );
@@ -526,7 +508,6 @@ class _ItemsUploadScreenState extends State<ItemsUploadScreen> {
       "productDescription": descriptionController.text.toString(),
       "productTitle": titleController.text.toString(),
       "productPrice": int.parse(priceController.text),
-      "productQuantity": int.parse(quantityController.text),
       "publishedDate": DateTime.now(),
       "status": "available",
       "thumbnailUrl": downloadUrl,
@@ -543,7 +524,6 @@ class _ItemsUploadScreenState extends State<ItemsUploadScreen> {
         "productDescription": descriptionController.text.toString(),
         "productTitle": titleController.text.toString(),
         "productPrice": int.parse(priceController.text),
-        "productQuantity": int.parse(quantityController.text),
         "publishedDate": DateTime.now(),
         "status": "available",
         "thumbnailUrl": downloadUrl,
