@@ -35,8 +35,8 @@ class _EarningsScreenState extends State<EarningsScreen> {
       if (salesSnapshot.exists) {
         // Extract the sale value from the document and update the total earnings
         setState(() {
-          totalEarnings = salesSnapshot['earningsGCash'] ?? 0.0;
-          totalEarningsCashonDelivery = salesSnapshot['earningsCashOnDelivery'] ?? 0.0;
+          totalEarnings = (salesSnapshot['earningsGCash'] ?? 0).toDouble();
+          totalEarningsCashonDelivery = (salesSnapshot['earningsCashOnDelivery'] ?? 0).toDouble();
         });
       } else {
         // If the document doesn't exist, set earnings to 0
@@ -49,6 +49,7 @@ class _EarningsScreenState extends State<EarningsScreen> {
       print('Error fetching earnings: $error');
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
